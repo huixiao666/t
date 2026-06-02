@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>外连态势大屏 - Sing-box</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
         :root {
             --bg-color: #020b1a;
@@ -58,39 +59,30 @@
         tbody tr:hover { background-color: rgba(0, 240, 255, 0.1); }
 
         /* ================= 响应式适配区 ================= */
-
-        /* 1. 平板端适配 (屏幕宽度小于 1200px) */
         @media screen and (max-width: 1200px) {
             .dashboard-container {
-                grid-template-columns: 1fr 1fr; /* 变为两列 */
+                grid-template-columns: 1fr 1fr;
                 grid-template-rows: auto auto auto;
             }
-            .center-col { grid-column: 1 / 3; grid-row: 1; height: 350px; } /* 地图置顶占满 */
+            .center-col { grid-column: 1 / 3; grid-row: 1; height: 350px; }
             .left-col { grid-column: 1; grid-row: 2; }
             .right-col { grid-column: 2; grid-row: 2; }
             .bottom-table { grid-column: 1 / 3; grid-row: 3; }
         }
 
-        /* 2. 手机端适配 (屏幕宽度小于 768px) */
         @media screen and (max-width: 768px) {
             .header { font-size: 20px; padding: 10px 0; }
             .dashboard-container {
-                display: flex; /* 取消 Grid，改用 Flex 垂直瀑布流排列 */
+                display: flex;
                 flex-direction: column;
                 height: auto;
                 padding: 10px;
             }
-            .center-col { height: 250px; } /* 手机上缩小地图区域 */
+            .center-col { height: 250px; }
             .panel { min-height: 250px; }
-            
-            /* 统计卡片在极小屏幕下允许换行 */
             .stats-container { flex-wrap: wrap; }
             .stat-box { min-width: 30%; }
-
-            /* 保证表格在手机上可以横向滑动，而不会挤压换行 */
-            .bottom-table {
-                -webkit-overflow-scrolling: touch; /* iOS 滑动顺畅 */
-            }
+            .bottom-table { -webkit-overflow-scrolling: touch; }
         }
     </style>
 </head>
@@ -113,9 +105,7 @@
 
         <div class="panel center-col">
             <div class="panel-title">全球节点连接态势</div>
-            <div id="mapChart" class="chart-box" style="display: flex; align-items: center; justify-content: center; color: #4db8ff;">
-                [地图组件留白区域]
-            </div>
+            <div id="mapChart" class="chart-box"></div>
         </div>
 
         <div class="right-col">
@@ -124,7 +114,7 @@
                 <div id="topDestChart" class="chart-box"></div>
             </div>
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">协议分布 (示例)</div>
+                <div class="panel-title">协议分布</div>
                 <div id="protocolChart" class="chart-box"></div>
             </div>
         </div>
@@ -144,21 +134,21 @@
                         <th>出站节点</th>
                     </tr>
                 </thead>
-                <tbody>
-                    </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // --- 图表初始化 ---
+        // --- 1. 图表初始化 ---
         const trendChart = echarts.init(document.getElementById('trendChart'));
+        const mapChart = echarts.init(document.getElementById('mapChart'));
         const topDestChart = echarts.init(document.getElementById('topDestChart'));
         const protocolChart = echarts.init(document.getElementById('protocolChart'));
 
-        const colors = ['#00f0ff', '#ffeb3b', '#ff5722', '#4caf50'];
+        const colors = ['#00f0ff', '#ffeb3b', '#ff5722', '#4caf50', '#9c27b0'];
 
-        // 流量趋势图配置
+        // --- 2. 基础图表配置 ---
         const trendOption = {
             tooltip: { trigger: 'axis' },
             grid: { left: '10%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
@@ -171,15 +161,68 @@
         };
         trendChart.setOption(trendOption);
 
-        // TOP 5 柱状图配置
+        // --- 3. 地图组件配置 ---
+        const mapOption = {
+            tooltip: { trigger: 'item', formatter: '{b}' },
+            geo: {
+                map: 'world',
+                roam: true,
+                zoom: 1.2,
+                label: { emphasis: { show: false } },
+                itemStyle: {
+                    normal: { areaColor: '#091e47', borderColor: '#00f0ff', borderWidth: 0.5 },
+                    emphasis: { areaColor: '#14356e' }
+                }
+            },
+            series: [
+                {
+                    type: 'lines', zlevel: 2,
+                    effect: { show: true, period: 4, trailLength: 0.2, symbol: 'arrow', symbolSize: 5 },
+                    lineStyle: { normal: { color: '#00f0ff', width: 1, opacity: 0.4, curveness: 0.2 } },
+                    data: []
+                },
+                {
+                    type: 'effectScatter', coordinateSystem: 'geo', zlevel: 2,
+                    rippleEffect: { brushType: 'stroke' },
+                    label: { emphasis: { show: true, position: 'right', formatter: '{b}' } },
+                    symbolSize: 8,
+                    itemStyle: { normal: { color: '#ffeb3b' } },
+                    data: []
+                }
+            ]
+        };
+        mapChart.setOption(mapOption);
+
+        // --- 4. TOP 5 目标图表 (修复双 DataZoom 控制) ---
         const topDestOption = {
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            grid: { left: '3%', right: '4%', bottom: '3%', top: '5%', containLabel: true },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+            dataZoom: [
+                { type: 'inside', yAxisIndex: 0, start: 0, end: 100 }, 
+                { type: 'slider', yAxisIndex: 0, right: 0, width: 10, borderColor: 'transparent', backgroundColor: '#061535', fillerColor: 'rgba(0, 240, 255, 0.5)' }
+            ],
             xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { show: false } },
-            yAxis: { type: 'category', data: ['Loading...'], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10, width: 80, overflow: 'truncate' } },
-            series: [{ type: 'bar', data: [0], itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0f367a' }]), borderRadius: [0, 4, 4, 0] } }]
+            yAxis: { type: 'category', data: [], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10, width: 80, overflow: 'truncate' } },
+            series: [{ type: 'bar', data: [], itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0f367a' }]), borderRadius: [0, 4, 4, 0] } }]
         };
         topDestChart.setOption(topDestOption);
+
+        // --- 5. 协议分布环形图 ---
+        const protocolOption = {
+            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+            legend: { type: 'scroll', orient: 'vertical', right: 5, top: 20, bottom: 20, textStyle: { color: '#a0b2d8', fontSize: 10 }, pageIconColor: '#00f0ff', pageTextStyle: { color: '#fff' } },
+            series: [
+                {
+                    name: '协议分布', type: 'pie', radius: ['50%', '70%'], center: ['40%', '50%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 5, borderColor: '#020b1a', borderWidth: 2 },
+                    label: { show: false },
+                    emphasis: { label: { show: true, fontSize: '12', fontWeight: 'bold', color: '#fff', formatter: '{b}' } },
+                    data: []
+                }
+            ]
+        };
+        protocolChart.setOption(protocolOption);
 
         // --- Sing-box 数据对接逻辑 ---
         const API_BASE = "127.0.0.1:9090"; 
@@ -201,6 +244,7 @@
 
                 trendChart.setOption({ xAxis: { data: timeData }, series: [{ data: upData }, { data: downData }] });
             };
+            ws.onerror = () => {}; // 静默处理未启动时的报错
         }
 
         async function fetchConnections() {
@@ -208,33 +252,76 @@
                 const response = await fetch(`http://${API_BASE}/connections`);
                 const data = await response.json();
                 updateTableAndStats(data.connections);
-            } catch (error) {
-                // 忽略未连接时的报错刷屏
-            }
+            } catch (error) { }
+        }
+
+        // 哈希算法：将不同目标随机打散到全球地图，用于前端动效生成
+        function getMockCoordinate(ipOrDomain) {
+            let hash = 0;
+            for (let i = 0; i < ipOrDomain.length; i++) hash = ipOrDomain.charCodeAt(i) + ((hash << 5) - hash);
+            return [ (Math.abs(hash) % 360) - 180, (Math.abs(hash >> 8) % 130) - 50 ];
         }
 
         function updateTableAndStats(connections) {
-            if(!connections) return;
+            if(!connections || connections.length === 0) return;
             
+            // 1. 顶部数据卡片
             document.getElementById('stat-terminals').innerText = new Set(connections.map(c => c.metadata.sourceIP)).size;
             document.getElementById('stat-domains').innerText = new Set(connections.map(c => c.metadata.host).filter(Boolean)).size;
             document.getElementById('stat-ips').innerText = new Set(connections.map(c => c.metadata.destinationIP)).size;
 
             const destCount = {};
+            const protocolCount = {};
+            const mapLines = [];
+            const mapPoints = [];
+            const centerCoord = [116.40, 39.90]; // 默认起点基准（中国）
+
             connections.forEach(c => {
                 const dest = c.metadata.host || c.metadata.destinationIP;
+                if(!dest) return;
+
+                // 统计目标
                 destCount[dest] = (destCount[dest] || 0) + 1;
+
+                // 真实动态提取协议/出站链类型 (VLESS / Shadowsocks / Direct 等)
+                let proto = "DIRECT";
+                if(c.chains && c.chains.length > 0) proto = c.chains[0].toUpperCase();
+                const netType = c.metadata.network ? `(${c.metadata.network.toUpperCase()})` : '';
+                const protoKey = `${proto} ${netType}`;
+                protocolCount[protoKey] = (protocolCount[protoKey] || 0) + 1;
+
+                // 准备地图打点与飞线数据
+                const coord = getMockCoordinate(dest);
+                mapPoints.push({ name: dest, value: [...coord, 1] });
+                mapLines.push({ coords: [centerCoord, coord] });
             });
-            const sortedDest = Object.entries(destCount).sort((a, b) => a[1] - b[1]).slice(-5);
+
+            // 2. 更新目标排行 (修复滚动条同步问题)
+            const sortedDest = Object.entries(destCount).sort((a, b) => a[1] - b[1]);
+            const startPercent = sortedDest.length > 10 ? 100 - (10 / sortedDest.length * 100) : 0;
             topDestChart.setOption({
+                dataZoom: [
+                    { type: 'inside', start: startPercent, end: 100 },
+                    { type: 'slider', start: startPercent, end: 100 }
+                ],
                 yAxis: { data: sortedDest.map(item => item[0]) },
                 series: [{ data: sortedDest.map(item => item[1]) }]
             });
 
+            // 3. 更新动态协议饼图
+            const protoData = Object.entries(protocolCount).map(([name, value]) => ({ name, value }));
+            protocolChart.setOption({ series: [{ data: protoData }] });
+
+            // 4. 更新全球地图组件（对数据做去重，防止高频刷新导致浏览器内存泄漏）
+            const uniquePoints = Array.from(new Map(mapPoints.map(item => [item.name, item])).values());
+            mapChart.setOption({ series: [ { data: mapLines.slice(0, 50) }, { data: uniquePoints.slice(0, 50) } ] });
+
+            // 5. 更新滚动监控数据表格
             const tbody = document.querySelector('#connectionsTable tbody');
             tbody.innerHTML = '';
-            connections.slice(0, 50).forEach(c => {
+            connections.slice(0, 40).forEach(c => {
                 const tr = document.createElement('tr');
+                const protoStr = (c.chains && c.chains.length > 0) ? c.chains[0] : 'DIRECT';
                 tr.innerHTML = `
                     <td>${c.metadata.sourceIP}</td>
                     <td>${c.metadata.sourcePort}</td>
@@ -243,22 +330,23 @@
                     <td>${(c.upload / 1024).toFixed(1)} KB</td>
                     <td>${(c.download / 1024).toFixed(1)} KB</td>
                     <td>${c.rule}</td>
-                    <td>${c.chains ? c.chains[0] : 'DIRECT'}</td>
+                    <td>${protoStr}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // 监听窗口大小变化，重绘图表，这是响应式设计的关键一步
+        // 统一自适应视口缩放
         window.addEventListener('resize', () => {
             trendChart.resize();
+            mapChart.resize();
             topDestChart.resize();
             protocolChart.resize();
         });
 
+        // 初始化运行
         connectTrafficWS();
         setInterval(fetchConnections, 2000);
-
     </script>
 </body>
 </html>
