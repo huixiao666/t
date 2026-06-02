@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>外连态势大屏 - Sing-box</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #020b1a;
+            --panel-bg: rgba(9, 30, 71, 0.6);
+            --border-color: #0f367a;
+            --text-main: #ffffff;
+            --text-highlight: #00f0ff;
+        }
+        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        
+        /* 顶部标题栏 */
+        .header { text-align: center; padding: 15px 0; font-size: 26px; font-weight: bold; letter-spacing: 2px; color: var(--text-highlight); background: linear-gradient(to bottom, rgba(0,240,255,0.1) 0%, transparent 100%); border-bottom: 2px solid var(--border-color); }
+        
+        /* 基础网格布局（默认电脑端） */
+        .dashboard-container { 
+            display: grid; 
+            grid-template-columns: 25% calc(50% - 30px) 25%; 
+            grid-template-rows: auto 300px; 
+            gap: 15px; 
+            padding: 15px; 
+            min-height: calc(100vh - 80px); 
+            box-sizing: border-box; 
+        }
+        
+        /* 面板基础样式 */
+        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: 15px; position: relative; display: flex; flex-direction: column; }
+        .panel::before, .panel::after { content: ''; position: absolute; width: 15px; height: 15px; border-color: var(--text-highlight); border-style: solid; }
+        .panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        
+        .panel-title { font-size: 16px; color: var(--text-highlight); margin-bottom: 10px; display: flex; align-items: center; }
+        .panel-title::before { content: '■'; margin-right: 8px; font-size: 12px; }
+        
+        .chart-box { flex: 1; width: 100%; height: 100%; min-height: 200px; }
+        
+        /* 区域分配 */
+        .left-col { display: flex; flex-direction: column; gap: 15px; grid-column: 1; grid-row: 1; }
+        .center-col { grid-column: 2; grid-row: 1; display: flex; flex-direction: column;}
+        .right-col { display: flex; flex-direction: column; gap: 15px; grid-column: 3; grid-row: 1; }
+        .bottom-table { grid-column: 1 / 4; grid-row: 2; overflow-y: auto; overflow-x: auto; }
+
+        /* 顶部统计卡片 */
+        .stats-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
+        .stat-box { text-align: center; background: rgba(0, 240, 255, 0.05); padding: 10px; border: 1px solid var(--border-color); flex: 1; }
+        .stat-num { font-size: 24px; color: var(--text-highlight); font-weight: bold; margin-top: 5px; }
+
+        /* 表格样式 */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        thead th { position: sticky; top: 0; background-color: #061535; color: var(--text-highlight); padding: 10px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        tbody td { padding: 8px 10px; border-bottom: 1px dashed #14356e; color: #a0b2d8; white-space: nowrap; }
+        tbody tr:hover { background-color: rgba(0, 240, 255, 0.1); }
+
+        /* ================= 响应式适配区 ================= */
+
+        /* 1. 平板端适配 (屏幕宽度小于 1200px) */
+        @media screen and (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: 1fr 1fr; /* 变为两列 */
+                grid-template-rows: auto auto auto;
+            }
+            .center-col { grid-column: 1 / 3; grid-row: 1; height: 350px; } /* 地图置顶占满 */
+            .left-col { grid-column: 1; grid-row: 2; }
+            .right-col { grid-column: 2; grid-row: 2; }
+            .bottom-table { grid-column: 1 / 3; grid-row: 3; }
+        }
+
+        /* 2. 手机端适配 (屏幕宽度小于 768px) */
+        @media screen and (max-width: 768px) {
+            .header { font-size: 20px; padding: 10px 0; }
+            .dashboard-container {
+                display: flex; /* 取消 Grid，改用 Flex 垂直瀑布流排列 */
+                flex-direction: column;
+                height: auto;
+                padding: 10px;
+            }
+            .center-col { height: 250px; } /* 手机上缩小地图区域 */
+            .panel { min-height: 250px; }
+            
+            /* 统计卡片在极小屏幕下允许换行 */
+            .stats-container { flex-wrap: wrap; }
+            .stat-box { min-width: 30%; }
+
+            /* 保证表格在手机上可以横向滑动，而不会挤压换行 */
+            .bottom-table {
+                -webkit-overflow-scrolling: touch; /* iOS 滑动顺畅 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">外连态势大屏</div>
+
+    <div class="dashboard-container">
+        <div class="left-col">
+            <div class="stats-container">
+                <div class="stat-box"><div>外连终端</div><div class="stat-num" id="stat-terminals">0</div></div>
+                <div class="stat-box"><div>外连域名</div><div class="stat-num" id="stat-domains">0</div></div>
+                <div class="stat-box"><div>目标IP</div><div class="stat-num" id="stat-ips">0</div></div>
+            </div>
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">外连访问趋势 (实时)</div>
+                <div id="trendChart" class="chart-box"></div>
+            </div>
+        </div>
+
+        <div class="panel center-col">
+            <div class="panel-title">全球节点连接态势</div>
+            <div id="mapChart" class="chart-box" style="display: flex; align-items: center; justify-content: center; color: #4db8ff;">
+                [地图组件留白区域]
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">外连最多的目标 TOP 5</div>
+                <div id="topDestChart" class="chart-box"></div>
+            </div>
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">协议分布 (示例)</div>
+                <div id="protocolChart" class="chart-box"></div>
+            </div>
+        </div>
+
+        <div class="panel bottom-table">
+            <div class="panel-title">实时访问监控</div>
+            <table id="connectionsTable">
+                <thead>
+                    <tr>
+                        <th>源IP</th>
+                        <th>源端口</th>
+                        <th>目标IP/域名</th>
+                        <th>目标端口</th>
+                        <th>上传</th>
+                        <th>下载</th>
+                        <th>规则</th>
+                        <th>出站节点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- 图表初始化 ---
+        const trendChart = echarts.init(document.getElementById('trendChart'));
+        const topDestChart = echarts.init(document.getElementById('topDestChart'));
+        const protocolChart = echarts.init(document.getElementById('protocolChart'));
+
+        const colors = ['#00f0ff', '#ffeb3b', '#ff5722', '#4caf50'];
+
+        // 流量趋势图配置
+        const trendOption = {
+            tooltip: { trigger: 'axis' },
+            grid: { left: '10%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
+            xAxis: { type: 'category', boundaryGap: false, data: [], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
+            yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: '#0f367a', type: 'dashed' } }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
+            series: [
+                { name: '上传(KB/s)', type: 'line', smooth: true, itemStyle: { color: colors[0] }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(0,240,255,0.3)' }, { offset: 1, color: 'rgba(0,240,255,0)' }]) }, data: [] },
+                { name: '下载(KB/s)', type: 'line', smooth: true, itemStyle: { color: colors[1] }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(255,235,59,0.3)' }, { offset: 1, color: 'rgba(255,235,59,0)' }]) }, data: [] }
+            ]
+        };
+        trendChart.setOption(trendOption);
+
+        // TOP 5 柱状图配置
+        const topDestOption = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { left: '3%', right: '4%', bottom: '3%', top: '5%', containLabel: true },
+            xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { show: false } },
+            yAxis: { type: 'category', data: ['Loading...'], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10, width: 80, overflow: 'truncate' } },
+            series: [{ type: 'bar', data: [0], itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0f367a' }]), borderRadius: [0, 4, 4, 0] } }]
+        };
+        topDestChart.setOption(topDestOption);
+
+        // --- Sing-box 数据对接逻辑 ---
+        const API_BASE = "127.0.0.1:9090"; 
+        let timeData = [];
+        let upData = [];
+        let downData = [];
+
+        function connectTrafficWS() {
+            const ws = new WebSocket(`ws://${API_BASE}/traffic`);
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const now = new Date();
+                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                
+                if(timeData.length > 20) { timeData.shift(); upData.shift(); downData.shift(); }
+                timeData.push(timeStr);
+                upData.push((data.up / 1024).toFixed(1));
+                downData.push((data.down / 1024).toFixed(1));
+
+                trendChart.setOption({ xAxis: { data: timeData }, series: [{ data: upData }, { data: downData }] });
+            };
+        }
+
+        async function fetchConnections() {
+            try {
+                const response = await fetch(`http://${API_BASE}/connections`);
+                const data = await response.json();
+                updateTableAndStats(data.connections);
+            } catch (error) {
+                // 忽略未连接时的报错刷屏
+            }
+        }
+
+        function updateTableAndStats(connections) {
+            if(!connections) return;
+            
+            document.getElementById('stat-terminals').innerText = new Set(connections.map(c => c.metadata.sourceIP)).size;
+            document.getElementById('stat-domains').innerText = new Set(connections.map(c => c.metadata.host).filter(Boolean)).size;
+            document.getElementById('stat-ips').innerText = new Set(connections.map(c => c.metadata.destinationIP)).size;
+
+            const destCount = {};
+            connections.forEach(c => {
+                const dest = c.metadata.host || c.metadata.destinationIP;
+                destCount[dest] = (destCount[dest] || 0) + 1;
+            });
+            const sortedDest = Object.entries(destCount).sort((a, b) => a[1] - b[1]).slice(-5);
+            topDestChart.setOption({
+                yAxis: { data: sortedDest.map(item => item[0]) },
+                series: [{ data: sortedDest.map(item => item[1]) }]
+            });
+
+            const tbody = document.querySelector('#connectionsTable tbody');
+            tbody.innerHTML = '';
+            connections.slice(0, 50).forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.metadata.sourceIP}</td>
+                    <td>${c.metadata.sourcePort}</td>
+                    <td>${c.metadata.host || c.metadata.destinationIP}</td>
+                    <td>${c.metadata.destinationPort}</td>
+                    <td>${(c.upload / 1024).toFixed(1)} KB</td>
+                    <td>${(c.download / 1024).toFixed(1)} KB</td>
+                    <td>${c.rule}</td>
+                    <td>${c.chains ? c.chains[0] : 'DIRECT'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 监听窗口大小变化，重绘图表，这是响应式设计的关键一步
+        window.addEventListener('resize', () => {
+            trendChart.resize();
+            topDestChart.resize();
+            protocolChart.resize();
+        });
+
+        connectTrafficWS();
+        setInterval(fetchConnections, 2000);
+
+    </script>
+</body>
+</html>
