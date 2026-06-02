@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SING-BOX 内核十六维全动态超视距全息大屏 v5.0 Ultimate</title>
+    <title>SING-BOX 内核十六维全动态超视距全息大屏 v5.0 终极版</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
@@ -84,11 +84,11 @@
 <body>
 
     <div class="header">
-        <div class="title">🪐 SING-BOX STANDARD 16-AXIS TELEMETRY CORE METRIC AGGREGATOR v5.0 Ultimate</div>
+        <div class="title">🪐 SING-BOX 标准版 十六轴遥测核心指标聚合器 v5.0 终极版</div>
         <div class="api-controller">
-            <span style="font-size:7px; color:var(--text-muted)">REST_API:</span>
+            <span style="font-size:7px; color:var(--text-muted)">接口地址:</span>
             <input type="text" id="apiInput" class="api-input" value="127.0.0.1:9090" onchange="resetPipeline()">
-            <span id="conn-status" style="color:var(--text-amber); font-size:7px;">● CONNECTING...</span>
+            <span id="conn-status" style="color:var(--text-amber); font-size:7px;">● 连接中...</span>
         </div>
     </div>
 
@@ -96,7 +96,7 @@
         
         <div class="column">
             <div class="panel" style="height: 28%;">
-                <div class="panel-title"><div><span class="num">01</span>BANDWIDTH DYNAMICS 吞吐走势</div></div>
+                <div class="panel-title"><div><span class="num">01</span>带宽动态 吞吐走势</div></div>
                 <div class="speed-grid">
                     <div class="speed-card"><div class="lbl">累计总量</div><div class="val" id="m01-total">0.00 B</div></div>
                     <div class="speed-card"><div class="lbl">瞬时上行</div><div class="val" id="m01-up">0.0 B/s</div></div>
@@ -106,9 +106,9 @@
             </div>
 
             <div class="panel" style="height: 24%;">
-                <div class="panel-title"><div><span class="num">02</span>INBOUND SNIFFER 入站特征探测</div></div>
+                <div class="panel-title"><div><span class="num">02</span>入站嗅探器 入站特征探测</div></div>
                 <div class="scroller">
-                    <div class="test-card pass"><span>Inbound Core Interface</span><span id="m02-active">POLLED</span></div>
+                    <div class="test-card pass"><span>入站核心接口</span><span id="m02-active">轮询中</span></div>
                     <div class="progress-container"><div class="progress-label">TLS SNI 探测</div><div class="progress-bg"><div class="progress-fill" id="m02-tls" style="width:0%"></div></div><span id="m02-tls-txt">0</span></div>
                     <div class="progress-container"><div class="progress-label">HTTP Host 嗅探</div><div class="progress-bg"><div class="progress-fill" id="m02-http" style="width:0%"></div></div><span id="m02-http-txt">0</span></div>
                     <div class="progress-container"><div class="progress-label">QUIC / STUN 识别</div><div class="progress-bg"><div class="progress-fill" id="m02-quic" style="width:0%"></div></div><span id="m02-quic-txt">0</span></div>
@@ -116,40 +116,40 @@
             </div>
 
             <div class="panel" style="height: 24%;">
-                <div class="panel-title"><div><span class="num">03</span>DNS CASCADING AUDIT 级联多路解析</div></div>
+                <div class="panel-title"><div><span class="num">03</span>DNS 级联审计 级联多路解析</div></div>
                 <div class="scroller">
-                    <div class="list-item"><span>Direct / Local Core Resolv</span><span id="dns-local-rt" style="color:var(--text-green)">-- ms</span></div>
-                    <div class="list-item"><span>Remote Primary DoH Server</span><span id="dns-remote1-rt" style="color:var(--text-cyan)">-- ms</span></div>
-                    <div class="list-item"><span>Remote Backup DoH Server</span><span id="dns-remote2-rt" style="color:var(--text-purple)">-- ms</span></div>
+                    <div class="list-item"><span>直连 / 本地核心解析</span><span id="dns-local-rt" style="color:var(--text-green)">-- ms</span></div>
+                    <div class="list-item"><span>远程主 DoH 服务器</span><span id="dns-remote1-rt" style="color:var(--text-cyan)">-- ms</span></div>
+                    <div class="list-item"><span>远程备用 DoH 服务器</span><span id="dns-remote2-rt" style="color:var(--text-purple)">-- ms</span></div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">04</span>DNS RESOLVER PLUGINS 域名缓存空间</div></div>
+                <div class="panel-title"><div><span class="num">04</span>DNS 解析插件 域名缓存空间</div></div>
                 <div class="scroller">
                     <div class="list-item"><span>动态内存解析命中率</span><span id="m04-hit-rate" style="color:var(--text-green)">-- %</span></div>
-                    <div class="list-item"><span>查询查询插件状态</span><span style="color:var(--text-cyan)">ADAPTIVE</span></div>
-                    <div class="test-card purple" style="margin-top:2px;"><span>Fake-IP Address Mapping</span><span>198.18.0.0/15</span></div>
+                    <div class="list-item"><span>查询插件状态</span><span style="color:var(--text-cyan)">自适应</span></div>
+                    <div class="test-card purple" style="margin-top:2px;"><span>Fake-IP 地址映射</span><span>198.18.0.0/15</span></div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 52%;">
-                <div class="panel-title"><div><span class="num">05</span>CORE TRACE LOGSTREAM 异步消息捕获终端</div></div>
+                <div class="panel-title"><div><span class="num">05</span>核心追踪日志流 异步消息捕获终端</div></div>
                 <div class="terminal-box" id="m05-log-terminal">正在建立 WebSockets 日志流全捕获管道...</div>
             </div>
 
             <div class="panel" style="height: 18%;">
-                <div class="panel-title"><div><span class="num">06</span>L4 PROTOCOL INTERCEPTION 四层传输裁剪</div></div>
+                <div class="panel-title"><div><span class="num">06</span>四层协议拦截 传输裁剪</div></div>
                 <div class="scroller">
-                    <div class="progress-container"><div class="progress-label">TCP Conns</div><div class="progress-bg"><div class="progress-fill" id="m06-tcp" style="width:0%"></div></div><span id="m06-tcp-txt">0</span></div>
-                    <div class="progress-container"><div class="progress-label">UDP Streams</div><div class="progress-bg"><div class="progress-fill" id="m06-udp" style="width:0%; background:linear-gradient(90deg, #d500f9, #e040fb)"></div></div><span id="m06-udp-txt">0</span></div>
+                    <div class="progress-container"><div class="progress-label">TCP 连接数</div><div class="progress-bg"><div class="progress-fill" id="m06-tcp" style="width:0%"></div></div><span id="m06-tcp-txt">0</span></div>
+                    <div class="progress-container"><div class="progress-label">UDP 流数</div><div class="progress-bg"><div class="progress-fill" id="m06-udp" style="width:0%; background:linear-gradient(90deg, #d500f9, #e040fb)"></div></div><span id="m06-udp-txt">0</span></div>
                 </div>
             </div>
 
             <div class="panel" style="height: 16%;">
-                <div class="panel-title"><div><span class="num">11</span>GO RUNTIME ALLOCATION 运行时分配</div></div>
+                <div class="panel-title"><div><span class="num">11</span>Go 运行时分配 内存资源监控</div></div>
                 <div class="scroller">
                     <div class="progress-container"><div class="progress-label">堆内存分配开销</div><div class="progress-bg"><div class="progress-fill" id="m11-mem-fill" style="width:0%"></div></div><span id="m11-mem-txt">-- MB</span></div>
                     <div class="list-item"><span>活动轻量级协程数 (Goroutines)</span><span style="color:var(--text-cyan)" id="m11-g">--</span></div>
@@ -157,28 +157,28 @@
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">13</span>NTP SYNCHRONIZATION ALIGNMENT 时间同步对齐</div></div>
+                <div class="panel-title"><div><span class="num">13</span>NTP 同步校准 时间对齐</div></div>
                 <div class="scroller">
                     <div class="list-item"><span>时钟漂移偏置 (Offset)</span><span id="m13-offset" style="color:var(--text-amber)">0.0000 ms</span></div>
-                    <div class="list-item"><span>同步源轮询间隔 (Interval)</span><span style="color:var(--text-muted)">30m0s (Default)</span></div>
+                    <div class="list-item"><span>同步源轮询间隔 (Interval)</span><span style="color:var(--text-muted)">30分0秒 (默认)</span></div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 52%;">
-                <div class="panel-title"><div><span class="num">12</span>GEOLOCATION TOPOLOGY 全球流向态势拓扑</div></div>
+                <div class="panel-title"><div><span class="num">12</span>地理位置拓扑 全球流向态势</div></div>
                 <div id="chart-map" style="width:100%; flex:1;"></div>
             </div>
 
             <div class="panel" style="height: 32%;">
-                <div class="panel-title"><div><span class="num">14</span>PROCESS & PACKAGE AUDITOR 进程流量劫持墙</div></div>
+                <div class="panel-title"><div><span class="num">14</span>进程流量审计 应用流量劫持墙</div></div>
                 <div class="scroller">
                     <table id="table-process">
                         <thead>
                             <tr>
-                                <th style="width:30%">APP特征</th>
-                                <th style="width:52%">PROCESS PATH / PACKAGE</th>
+                                <th style="width:30%">应用特征</th>
+                                <th style="width:52%">进程路径 / 包名</th>
                                 <th style="width:18%">并发数</th>
                             </tr>
                         </thead>
@@ -188,25 +188,25 @@
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">15</span>EXPERIMENTAL CACHE FILE 持久化数据库</div></div>
+                <div class="panel-title"><div><span class="num">15</span>实验性缓存文件 持久化数据库</div></div>
                 <div class="scroller">
-                    <div class="list-item"><span>store_fakeip 固化转储</span><span style="color:var(--text-green)">ENABLED</span></div>
-                    <div class="progress-container"><div class="progress-label">DB 固态 footprint</div><div class="progress-bg"><div class="progress-fill" style="width:4.2%; background:#d500f9"></div></div><span style="color:var(--text-purple)">1.42 MB</span></div>
+                    <div class="list-item"><span>store_fakeip 固化转储</span><span style="color:var(--text-green)">已启用</span></div>
+                    <div class="progress-container"><div class="progress-label">数据库固态占用</div><div class="progress-bg"><div class="progress-fill" style="width:4.2%; background:#d500f9"></div></div><span style="color:var(--text-purple)">1.42 MB</span></div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 36%;">
-                <div class="panel-title"><div><span class="num">07</span>ACTIVE CONNS PIPELINE 会话管道审计</div></div>
+                <div class="panel-title"><div><span class="num">07</span>活跃连接管道 会话审计</div></div>
                 <div class="scroller">
                     <table id="table-conn">
                         <thead>
                             <tr>
-                                <th style="width:45%">TARGET HOST</th>
-                                <th style="width:13%">PORT</th>
-                                <th style="width:18%">PAYLOAD</th>
-                                <th style="width:24%">OUTBOUND</th>
+                                <th style="width:45%">目标主机</th>
+                                <th style="width:13%">端口</th>
+                                <th style="width:18%">流量</th>
+                                <th style="width:24%">出站链路</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -215,30 +215,30 @@
             </div>
 
             <div class="panel" style="height: 26%;">
-                <div class="panel-title"><div><span class="num">08</span>DYNAMIC PROXY ATOMS 全自适应策略矩阵</div></div>
+                <div class="panel-title"><div><span class="num">08</span>动态代理节点 全自适应策略矩阵</div></div>
                 <div class="scroller" id="m08-outbounds">
                     <div style="color:var(--text-muted); text-align:center; padding-top:20px;">全检索出站分支树...</div>
                 </div>
             </div>
 
             <div class="panel" style="height: 15%;">
-                <div class="panel-title"><div><span class="num">09</span>ROUTING RULE-SET MATRIX SRS规则集挂载</div></div>
+                <div class="panel-title"><div><span class="num">09</span>路由规则集矩阵 SRS规则集挂载</div></div>
                 <div class="scroller" id="m09-rulesets">
                     <div style="color:var(--text-muted); text-align:center;">读取规则二进制SRS集...</div>
                 </div>
             </div>
 
             <div class="panel" style="height: 12%;">
-                <div class="panel-title"><div><span class="num">10</span>ROUTING HEAT EVALUATION 规则命中热度</div></div>
+                <div class="panel-title"><div><span class="num">10</span>路由热度评估 规则命中热度</div></div>
                 <div class="scroller" id="m10-heatmap">
                     <div style="color:var(--text-muted); text-align:center; font-size:6.5px;">抓取路由匹配热值...</div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">16</span>MULTIPLEX STREAM ALLOCATOR MUX多路复用</div></div>
+                <div class="panel-title"><div><span class="num">16</span>多路复用流分配器 MUX并发</div></div>
                 <div class="scroller">
-                    <div class="progress-container"><div class="progress-label">H2/QUIC 复用并发</div><div class="progress-bg"><div class="progress-fill" id="m16-mux" style="width:0%; background:linear-gradient(90deg, #ff6d00, #ffea00)"></div></div><span id="m16-mux-txt">0 / 8 Max</span></div>
+                    <div class="progress-container"><div class="progress-label">H2/QUIC 复用并发</div><div class="progress-bg"><div class="progress-fill" id="m16-mux" style="width:0%; background:linear-gradient(90deg, #ff6d00, #ffea00)"></div></div><span id="m16-mux-txt">0 / 8 最大</span></div>
                 </div>
             </div>
         </div>
@@ -287,7 +287,7 @@
             targetAPI = document.getElementById('apiInput').value.trim();
             totalBytes = 0; timeLabels.length = 0; upSeries.length = 0; downSeries.length = 0;
             document.getElementById('m05-log-terminal').innerHTML = "正在重载对流，重新建立日志采集通道...";
-            document.getElementById('conn-status').innerText = "● RESETTING...⚙️";
+            document.getElementById('conn-status').innerText = "● 重置中...⚙️";
             document.getElementById('conn-status').style.color = "var(--text-amber)";
             startUltraPipeline();
         }
@@ -307,6 +307,11 @@
             return 'HK';
         }
 
+        function translateLogType(type) {
+            const map = { 'error': '错误', 'reject': '拒绝', 'warning': '警告', 'debug': '调试', 'trace': '追踪', 'info': '信息' };
+            return map[type] || type.toUpperCase();
+        }
+
         function startUltraPipeline() {
             if(trafficWs) trafficWs.close();
             if(logWs) logWs.close();
@@ -319,7 +324,7 @@
                     document.getElementById('m01-total').innerText = formatBytes(totalBytes);
                     document.getElementById('m01-up').innerText = formatBytes(d.up) + "/s";
                     document.getElementById('m01-down').innerText = formatBytes(d.down) + "/s";
-                    document.getElementById('conn-status').innerText = "● LIVE METRIC TELEMETRY COUPLING";
+                    document.getElementById('conn-status').innerText = "● 实时遥测数据耦合中";
                     document.getElementById('conn-status').style.color = "var(--text-green)";
 
                     const tick = new Date().toLocaleTimeString().substring(3);
@@ -330,7 +335,7 @@
                     trafficChart.setOption({ xAxis: { data: timeLabels }, series: [{ data: upSeries }, { data: downSeries }] });
                 };
                 trafficWs.onerror = () => { 
-                    document.getElementById('conn-status').innerText = "● DEMO AGGREGATION STANDBY"; 
+                    document.getElementById('conn-status').innerText = "● 演示数据聚合待机中"; 
                     document.getElementById('conn-status').style.color = "var(--text-purple)"; 
                 };
             } catch(e) {}
@@ -349,7 +354,7 @@
                     if (data.type === 'info') color = 'var(--text-green)';
                     
                     line.style.color = color;
-                    line.innerText = `[${data.type.toUpperCase()}] ${data.payload}`;
+                    line.innerText = `[${translateLogType(data.type)}] ${data.payload}`;
                     term.appendChild(line);
                     
                     if(term.children.length > 65) term.removeChild(term.firstChild);
@@ -385,10 +390,10 @@
                     else if (sniffType.includes('HTTP')) httpSniff++;
                     else if (sniffType.includes('QUIC') || sniffType.includes('STUN')) quicSniff++;
 
-                    const rTag = c.rule || (c.chains ? c.chains[0] : 'MATCH');
+                    const rTag = c.rule || (c.chains ? c.chains[0] : '匹配');
                     ruleMap[rTag] = (ruleMap[rTag] || 0) + 1;
 
-                    const pPath = c.metadata.processPath || c.metadata.processName || 'System Core';
+                    const pPath = c.metadata.processPath || c.metadata.processName || '系统核心';
                     procMap[pPath] = (procMap[pPath] || 0) + 1;
 
                     if (idx === 0 && c.chains) activeNode = c.chains[c.chains.length - 1];
@@ -399,7 +404,7 @@
                         if (payload > 6 * 1024 * 1024) tr.className = 'heavy-load';
 
                         const host = c.metadata.host || c.metadata.destinationIP;
-                        const chain = c.chains ? c.chains.join('->') : 'DIRECT';
+                        const chain = c.chains ? c.chains.join('->') : '直连';
 
                         tr.innerHTML = `
                             <td title="${host}" style="color:var(--text-cyan)">${host}</td>
@@ -431,7 +436,7 @@
                     const tr = document.createElement('tr');
                     const nameOnly = path.substring(path.lastIndexOf('/') + 1);
                     tr.innerHTML = `
-                        <td style="color:var(--text-amber)">● PID/Native</td>
+                        <td style="color:var(--text-amber)">● 进程/原生</td>
                         <td title="${path}" style="color:var(--text-cyan)">${nameOnly}</td>
                         <td style="color:var(--text-green); font-weight:bold">${count}</td>
                     `;
@@ -477,7 +482,7 @@
 
                 const activeMux = Math.min(8, Math.ceil(tcp / 4));
                 document.getElementById('m16-mux').style.width = (activeMux / 8 * 100) + '%';
-                document.getElementById('m16-mux-txt').innerText = `${activeMux} / 8 Max`;
+                document.getElementById('m16-mux-txt').innerText = `${activeMux} / 8 最大`;
 
                 if (activeNode) {
                     const code = parseRegion(activeNode);
@@ -486,7 +491,7 @@
                         mapChart.setOption({
                             series: [
                                 { data: [{ coords: [runtimeGeo['Local'], runtimeGeo['Target']] }] },
-                                { data: [{ name: 'CLIENT TUN', value: runtimeGeo['Local'] }, { name: `EDGE: ${activeNode.substring(0,5)}`, value: runtimeGeo['Target'] }] }
+                                { data: [{ name: '客户端隧道', value: runtimeGeo['Local'] }, { name: `边缘节点: ${activeNode.substring(0,5)}`, value: runtimeGeo['Target'] }] }
                             ]
                         }, { lazyUpdate: true });
                     }
@@ -513,23 +518,23 @@
                 const tbody = document.querySelector('#table-conn tbody');
                 if(tbody.children.length === 0) {
                     tbody.innerHTML = `
-                        <tr><td style="color:var(--text-cyan)">static.cloudflare.net</td><td>443</td><td>2.04 MB</td><td style="color:var(--text-amber)">PROXY -> Node-Alpha</td></tr>
-                        <tr><td style="color:var(--text-cyan)">api.github.com</td><td>443</td><td>116 KB</td><td style="color:var(--text-amber)">PROXY -> Node-Beta</td></tr>
-                        <tr><td style="color:var(--text-cyan)">connectivity-check.ubuntu.com</td><td>80</td><td>8 KB</td><td style="color:var(--text-amber)">DIRECT</td></tr>
+                        <tr><td style="color:var(--text-cyan)">static.cloudflare.net</td><td>443</td><td>2.04 MB</td><td style="color:var(--text-amber)">代理 -> Node-Alpha</td></tr>
+                        <tr><td style="color:var(--text-cyan)">api.github.com</td><td>443</td><td>116 KB</td><td style="color:var(--text-amber)">代理 -> Node-Beta</td></tr>
+                        <tr><td style="color:var(--text-cyan)">connectivity-check.ubuntu.com</td><td>80</td><td>8 KB</td><td style="color:var(--text-amber)">直连</td></tr>
                     `;
                 }
                 const pbody = document.querySelector('#table-process tbody');
                 if(pbody.children.length === 0) {
                     pbody.innerHTML = `
-                        <tr><td style="color:var(--text-amber)">● PID/Native</td><td style="color:var(--text-cyan)">/usr/bin/wget</td><td style="color:var(--text-green)">1</td></tr>
-                        <tr><td style="color:var(--text-amber)">● PID/Native</td><td style="color:var(--text-cyan)">com.android.vending</td><td style="color:var(--text-green)">8</td></tr>
+                        <tr><td style="color:var(--text-amber)">● 进程/原生</td><td style="color:var(--text-cyan)">/usr/bin/wget</td><td style="color:var(--text-green)">1</td></tr>
+                        <tr><td style="color:var(--text-amber)">● 进程/原生</td><td style="color:var(--text-cyan)">com.android.vending</td><td style="color:var(--text-green)">8</td></tr>
                     `;
                 }
                 const m09Container = document.getElementById('m09-rulesets');
                 if(m09Container.children.length < 2) {
                     m09Container.innerHTML = `
-                        <div class="list-item"><span>📦 srs-default-cn</span><span style="color:var(--text-green)">TTL: 48h (VALID)</span></div>
-                        <div class="list-item"><span>📦 srs-default-proxy</span><span style="color:var(--text-green)">TTL: 48h (VALID)</span></div>
+                        <div class="list-item"><span>📦 srs-default-cn</span><span style="color:var(--text-green)">有效期: 48小时 (有效)</span></div>
+                        <div class="list-item"><span>📦 srs-default-proxy</span><span style="color:var(--text-green)">有效期: 48小时 (有效)</span></div>
                     `;
                 }
             }
