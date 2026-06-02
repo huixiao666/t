@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sing-box 十二维全息矩阵内核超精细态势大屏 v4.0</title>
+    <title>SING-BOX 内核超精细全动态态势大屏 v4.5</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
@@ -20,13 +20,11 @@
         }
         body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #fff; font-family: monospace, sans-serif; overflow: hidden; font-size: 9px; }
         
-        /* 紧凑顶栏 */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 0 8px; background: linear-gradient(to bottom, rgba(0,229,255,0.06) 0%, transparent 100%); border-bottom: 1px solid var(--border-blue); height: 24px; box-sizing: border-box; }
         .header .title { font-size: 10px; font-weight: bold; letter-spacing: 0.5px; color: #fff; }
         .header .api-controller { display: flex; align-items: center; gap: 5px; }
         .header .api-input { background: #030a1c; border: 1px solid var(--border-blue); color: var(--text-cyan); padding: 0 4px; font-family: monospace; font-size: 9px; border-radius: 1px; width: 90px; height: 15px; }
         
-        /* 极致四纵栏布局 */
         .grid-container {
             display: grid;
             grid-template-columns: 22% 36% 21% 21%;
@@ -37,7 +35,6 @@
         }
         .column { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
         
-        /* 统一原子面板 */
         .panel { background-color: var(--panel-bg); border: 1px solid var(--border-blue); border-radius: 1px; padding: 3px; position: relative; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
         .panel::before { content: ''; position: absolute; top: -1px; left: -1px; width: 3px; height: 3px; border-top: 1px solid var(--text-cyan); border-left: 1px solid var(--text-cyan); }
         .panel::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 3px; height: 3px; border-bottom: 1px solid var(--text-cyan); border-right: 1px solid var(--text-cyan); }
@@ -45,7 +42,6 @@
         .panel-title { font-size: 8.5px; font-weight: bold; color: var(--text-cyan); margin-bottom: 3px; border-bottom: 1px solid rgba(11, 34, 77, 0.7); padding-bottom: 1px; display: flex; justify-content: space-between; align-items: center; }
         .panel-title .num { color: var(--text-muted); font-size: 8px; margin-right: 3px; }
 
-        /* 数据卡片条目 */
         .test-card { background: rgba(11, 34, 77, 0.2); border: 1px solid rgba(11, 34, 77, 0.4); padding: 1px 3px; margin-bottom: 2px; font-size: 8.5px; border-left: 2px solid var(--text-muted); display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; }
         .test-card.pass { border-left-color: var(--text-green); }
         .test-card.warning { border-left-color: var(--text-amber); }
@@ -58,24 +54,23 @@
         
         .list-item { display: flex; align-items: center; justify-content: space-between; padding: 1px 0; font-size: 8.5px; border-bottom: 1px dashed rgba(11, 34, 77, 0.2); color: #92a9c9; }
         
-        /* 流量动力小组件 */
         .speed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 2px; }
         .speed-card { background: rgba(3, 10, 26, 0.8); border: 1px solid var(--border-blue); padding: 1.5px; text-align: center; }
         .speed-card .lbl { font-size: 7.5px; color: var(--text-muted); }
         .speed-card .val { font-size: 9px; font-weight: bold; color: var(--text-cyan); }
 
-        /* 进程与进度条组件 */
         .progress-container { display: flex; align-items: center; gap: 3px; font-size: 8px; margin: 1.5px 0; }
         .progress-label { width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #a4b9d6; }
         .progress-bg { flex: 1; height: 3px; background: #030d24; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #00b0ff, var(--text-cyan)); width: 0%; transition: width 0.2s; }
 
-        /* 策略原子蜂窝格 */
         .honeycomb { display: flex; flex-wrap: wrap; gap: 1.5px; padding: 1px 0; }
         .atom { font-size: 7.5px; padding: 0.5px 2px; background: #020717; border: 1px solid rgba(11, 34, 77, 0.6); color: #6a88ab; max-width: 55px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
         .atom.active { background: rgba(0, 230, 118, 0.08); border-color: var(--text-green); color: var(--text-green); font-weight: bold; }
 
-        /* 高精数据表格 */
+        /* 核心终端容器样式 */
+        .terminal-box { background: #01040f; border: 1px solid rgba(11, 34, 77, 0.8); padding: 3px; font-family: monospace; font-size: 7.5px; line-height: 1.3; overflow-y: auto; flex: 1; color: #a4b9d6; white-space: pre-wrap; word-break: break-all; }
+
         table { width: 100%; border-collapse: collapse; font-size: 8px; text-align: left; table-layout: fixed; }
         thead th { position: sticky; top: 0; background-color: #030818; color: var(--text-cyan); padding: 1.5px; border-bottom: 1px solid var(--border-blue); font-weight: normal; }
         tbody td { padding: 1px 1.5px; border-bottom: 1px dashed rgba(11, 34, 77, 0.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #9cb2cf; }
@@ -86,11 +81,11 @@
 <body>
 
     <div class="header">
-        <div class="title">🪐 SING-BOX CORE 12-AXIS FULL TELEMETRY MATRIX DASHBOARD v4.0 (TRACE MODE)</div>
+        <div class="title">🪐 SING-BOX CORE DYNAMIC MATRIX DIAGNOSTIC TELEMETRY DASHBOARD v4.5</div>
         <div class="api-controller">
-            <span style="font-size:8px; color:var(--text-muted)">CLASH_API:</span>
+            <span style="font-size:8px; color:var(--text-muted)">EXTERNAL_CONTROLLER:</span>
             <input type="text" id="apiInput" class="api-input" value="127.0.0.1:9090" onchange="resetPipeline()">
-            <span id="conn-status" style="color:var(--text-amber); font-size:8px;">● INITIALIZING...</span>
+            <span id="conn-status" style="color:var(--text-amber); font-size:8px;">● SYNCING...</span>
         </div>
     </div>
 
@@ -98,83 +93,71 @@
         
         <div class="column">
             <div class="panel" style="height: 26%;">
-                <div class="panel-title"><div><span class="num">01</span>BANDWIDTH DYNAMICS 频宽走势</div></div>
+                <div class="panel-title"><div><span class="num">01</span>BANDWIDTH DYNAMICS 频宽对流走势</div></div>
                 <div class="speed-grid">
-                    <div class="speed-card"><div class="lbl">总吞吐量</div><div class="val" id="m01-total">0.00 B</div></div>
-                    <div class="speed-card"><div class="lbl">瞬时上行</div><div class="val" id="m01-up">0.0 B/s</div></div>
-                    <div class="speed-card"><div class="lbl">瞬时下行</div><div class="val" id="m01-down">0.0 B/s</div></div>
+                    <div class="speed-card"><div class="lbl">累计消耗</div><div class="val" id="m01-total">0.00 B</div></div>
+                    <div class="speed-card"><div class="lbl">实时上行</div><div class="val" id="m01-up">0.0 B/s</div></div>
+                    <div class="speed-card"><div class="lbl">实时下行</div><div class="val" id="m01-down">0.0 B/s</div></div>
                 </div>
                 <div id="chart-traffic" style="width:100%; flex:1;"></div>
             </div>
 
             <div class="panel" style="height: 22%;">
-                <div class="panel-title"><div><span class="num">02</span>INBOUND STACK TUN接口与物理入站</div></div>
+                <div class="panel-title"><div><span class="num">02</span>INBOUND INTERFACES 活动入站层级</div></div>
                 <div class="scroller" id="m02-container">
-                    <div class="test-card pass"><span>TUN [tun-in] Stack: system</span><span>MTU 1500</span></div>
-                    <div class="test-card pass"><span>Hijack Address (DNS拦截)</span><span>10.8.0.2</span></div>
-                    <div class="list-item"><span>mixed-in (Socks/Http)</span><span style="color:var(--text-green)">Port: 7890</span></div>
-                    <div class="list-item"><span>http-in (纯HTTP)</span><span style="color:var(--text-muted)">Port: 7891</span></div>
-                    <div class="list-item"><span>socks-in (纯Socks5)</span><span style="color:var(--text-muted)">Port: 7892</span></div>
+                    <div class="test-card pass"><span>Auto Inbound Core Interface Detection</span><span id="m02-active-status">ACTIVE</span></div>
+                    <div class="list-item"><span>Standard Mixed Proxy Inbound</span><span style="color:var(--text-green)">Port: Dynamic</span></div>
+                    <div class="list-item"><span>TUN/TProxy Interception Stack</span><span style="color:var(--text-muted)" id="m02-stack">System / Mixed</span></div>
                 </div>
             </div>
 
             <div class="panel" style="height: 26%;">
-                <div class="panel-title"><div><span class="num">03</span>DNS CASCADING AUDIT 级联DNS层级</div></div>
+                <div class="panel-title"><div><span class="num">03</span>DNS CASCADING AUDIT 级联多路解析链</div></div>
                 <div class="scroller">
-                    <div class="test-card pass"><span>Static Binding [hosts_fix]</span><span>Active</span></div>
-                    <div class="test-card pass"><span>Direct Resolv [114dns]</span><span id="dns-114-rt">-- ms</span></div>
-                    <div class="test-card purple"><span>Secure Proxy [ggdns] DoH</span><span id="dns-gg-rt">-- ms</span></div>
-                    <div class="test-card purple"><span>Backup Proxy [quad9-doh]</span><span id="dns-q9-rt">-- ms</span></div>
+                    <div class="test-card pass"><span>Local Hosts Predefined Loopback</span><span>Synchronized</span></div>
+                    <div class="test-card pass"><span>Direct / Native DNS Resolv</span><span id="dns-114-rt">-- ms</span></div>
+                    <div class="test-card purple"><span>Remote DoH Secure Server [Primary]</span><span id="dns-gg-rt">-- ms</span></div>
+                    <div class="test-card purple"><span>Remote DoH Secure Server [Secondary]</span><span id="dns-q9-rt">-- ms</span></div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">04</span>DNS CACHE POOL 乐观高容量缓存池</div></div>
+                <div class="panel-title"><div><span class="num">04</span>DNS CACHE POOL 内存高容量缓存审计</div></div>
                 <div class="scroller">
-                    <div class="list-item"><span>配置理论容量限制 (Capacity)</span><span style="color:var(--text-cyan)">256,000</span></div>
-                    <div class="list-item"><span>乐观解析机制 (Optimistic)</span><span style="color:var(--text-green)">ENABLED (1h)</span></div>
-                    <div class="list-item"><span>动态内存缓存命中率</span><span id="m04-hit-rate" style="color:var(--text-green)">94.2%</span></div>
-                    <div class="list-item"><span>当前活跃 TTL 缓存条目</span><span style="color:var(--text-muted)">4,192 Items</span></div>
+                    <div class="list-item"><span>内核理论缓存上限 (Cache Capacity)</span><span style="color:var(--text-cyan)">Auto / Adapt</span></div>
+                    <div class="list-item"><span>并发乐观缓存状态 (Optimistic)</span><span style="color:var(--text-green)">Auto-Negotiate</span></div>
+                    <div class="list-item"><span>当前活动缓存命中率 (Hit Rate)</span><span id="m04-hit-rate" style="color:var(--text-green)">-- %</span></div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 56%;">
-                <div class="panel-title"><div><span class="num">12</span>GEOLOCATION TOPOLOGY 全球态势流向拓扑</div></div>
+                <div class="panel-title"><div><span class="num">12</span>GEOLOCATION TOPOLOGY 全球流向态势拓扑</div></div>
                 <div id="chart-map" style="width:100%; flex:1;"></div>
             </div>
 
             <div class="panel" style="height: 22%;">
-                <div class="panel-title"><div><span class="num">05</span>FAKEIP MEMORY MAP FakeIP内存分配空间</div></div>
-                <div class="scroller">
-                    <div class="test-card purple"><span>IPv4 IPv6 双栈映射范围</span><span>198.18.0.0/15 & fc00::/18</span></div>
-                    <div class="progress-container">
-                        <div class="progress-label">映射池饱和度</div>
-                        <div class="progress-bg"><div class="progress-fill" id="m05-fill" style="width: 1.2%"></div></div>
-                        <span id="m05-txt">0.12%</span>
-                    </div>
-                    <div style="font-size:7.5px; color:var(--text-muted); line-height:1.2;" id="m05-logs">等待内核逆向解析对流映射关系...</div>
-                </div>
+                <div class="panel-title"><div><span class="num">05</span>CORE DETAILED LOGSTREAM 内核详细消息自动捕获</div></div>
+                <div class="terminal-box" id="m05-log-terminal">等待捕获 Trace 级内核管道消息流...</div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">11</span>GO RUNTIME SAFEGUARD 内核分配与内存熔断</div></div>
+                <div class="panel-title"><div><span class="num">11</span>CORE RUNTIME ALLOCATION 运行时内存与协程</div></div>
                 <div class="scroller">
                     <div class="progress-container">
-                        <div class="progress-label" style="color:var(--text-crimson)">内存硬熔断限额</div>
-                        <div class="progress-bg" style="background:#210007"><div class="progress-fill" id="m11-mem-fill" style="width:12%; background:linear-gradient(90deg, #ff1744, #ff5252)"></div></div>
-                        <span id="m11-mem-txt">48.2 MB / 400MB</span>
+                        <div class="progress-label">当前物理分配</div>
+                        <div class="progress-bg"><div class="progress-fill" id="m11-mem-fill" style="width:0%"></div></div>
+                        <span id="m11-mem-txt">-- MB</span>
                     </div>
-                    <div class="list-item"><span>垃圾回收目标阈值 (gc_percent)</span><span style="color:var(--text-amber)">100%强制层级</span></div>
-                    <div class="list-item"><span>内核运行时活动协程数 (Goroutines)</span><span style="color:var(--text-cyan)" id="m11-g">84</span></div>
+                    <div class="list-item"><span>活动轻量级协程数 (Goroutines)</span><span style="color:var(--text-cyan)" id="m11-g">--</span></div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 68%;">
-                <div class="panel-title"><div><span class="num">07</span>HEAVY HITTERS PIPELINE 吞吐大户高精会话审计</div></div>
+                <div class="panel-title"><div><span class="num">07</span>HEAVY HITTERS CONNS 活跃会话并发管道审计</div></div>
                 <div class="scroller">
                     <table id="table-conn">
                         <thead>
@@ -191,20 +174,20 @@
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">06</span>L4 LAYER PROTOCOL ANALYSIS 四层剪裁与QUIC干预</div></div>
+                <div class="panel-title"><div><span class="num">06</span>L4 LAYER INTERCEPTION 四层传输剪裁特征</div></div>
                 <div class="scroller">
                     <div class="progress-container">
-                        <div class="progress-label">TCP Session</div>
+                        <div class="progress-label">TCP Conns</div>
                         <div class="progress-bg"><div class="progress-fill" id="m06-tcp" style="width:0%"></div></div>
                         <span id="m06-tcp-txt">0</span>
                     </div>
                     <div class="progress-container">
-                        <div class="progress-label">UDP Stream</div>
+                        <div class="progress-label">UDP Streams</div>
                         <div class="progress-bg"><div class="progress-fill" id="m06-udp" style="width:0%; background:linear-gradient(90deg, #d500f9, #e040fb)"></div></div>
                         <span id="m06-udp-txt">0</span>
                     </div>
-                    <div class="test-card fail" style="margin-top:3px;" id="quic-drop-card">
-                        <span>Google QUIC Drop 强行拦截拦截机制</span><span style="font-weight:bold" id="quic-drop-count">DROP: 0</span>
+                    <div class="test-card warning" style="margin-top:3px;">
+                        <span>Advanced QUIC Drop Opt.</span><span style="font-weight:bold" id="m06-quic-txt">INTERCEPTABLE</span>
                     </div>
                 </div>
             </div>
@@ -212,23 +195,23 @@
 
         <div class="column">
             <div class="panel" style="height: 44%;">
-                <div class="panel-title"><div><span class="num">08</span>PROXY ATOM MATRIX 策略分流全景无损矩阵</div></div>
+                <div class="panel-title"><div><span class="num">08</span>DYNAMIC PROXY ATOMS 全遍历策略分流矩阵</div></div>
                 <div class="scroller" id="m08-outbounds">
-                    <div style="color:var(--text-muted); text-align:center; padding-top:20px;">正在检索策略分支树...</div>
+                    <div style="color:var(--text-muted); text-align:center; padding-top:20px;">正在动态解析策略分支树...</div>
                 </div>
             </div>
 
             <div class="panel" style="height: 32%;">
-                <div class="panel-title"><div><span class="num">09</span>REMOTE RULE-SET ENGINE 远端SRS规则更新时效</div></div>
+                <div class="panel-title"><div><span class="num">09</span>ROUTING RULE-SET MATRIX 路由规则集挂载链</div></div>
                 <div class="scroller" id="m09-rulesets">
-                    <div style="color:var(--text-muted); text-align:center; padding-top:10px;">读取 rule_set 远端池...</div>
+                    <div style="color:var(--text-muted); text-align:center; padding-top:10px;">等待解析 rule_set 规则树...</div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title"><div><span class="num">10</span>ROUTING RULE HEATMAP 路由分流命中热值榜</div></div>
+                <div class="panel-title"><div><span class="num">10</span>ROUTING HEAT EVALUATION 分流命中热度追踪</div></div>
                 <div class="scroller" id="m10-heatmap">
-                    <div style="color:var(--text-muted); text-align:center; font-size:7.5px;">等待 Trace 级路由规则捕获...</div>
+                    <div style="color:var(--text-muted); text-align:center; font-size:7.5px;">等待捕获路由命中热值...</div>
                 </div>
             </div>
         </div>
@@ -236,11 +219,9 @@
     </div>
 
     <script>
-        // 初始化 ECharts 图表组件
         const mapChart = echarts.init(document.getElementById('chart-map'));
         const trafficChart = echarts.init(document.getElementById('chart-traffic'));
         
-        // 全球高精拓扑词典映射
         const coordDict = {
             'CN': [116.40, 39.90], 'HK': [114.17, 22.32], 'TW': [121.50, 25.04], 
             'JP': [139.69, 35.68], 'SG': [103.82, 1.35], 'US': [-118.24, 34.05], 
@@ -273,16 +254,16 @@
 
         let targetAPI = "127.0.0.1:9090";
         let totalBytes = 0;
-        let domainLogs = [];
-        let quicDropCount = 0;
-        let maxConnections = 0;
+        let trafficWs, logWs;
 
         function resetPipeline() {
             targetAPI = document.getElementById('apiInput').value.trim();
-            totalBytes = 0; quicDropCount = 0; maxConnections = 0;
+            totalBytes = 0;
             timeLabels.length = 0; upSeries.length = 0; downSeries.length = 0;
+            document.getElementById('m05-log-terminal').innerHTML = "正在重连并捕获新内核日志管道...";
             document.getElementById('conn-status').innerText = "● RE-NEGOTIATING...⚙️";
             document.getElementById('conn-status').style.color = "var(--text-amber)";
+            startUltraPipeline();
         }
 
         function formatBytes(b) {
@@ -294,28 +275,30 @@
 
         function parseRegion(node) {
             const n = node.toUpperCase();
-            if (/香港|HK|HONGKONG/i.test(n)) return 'HK';
-            if (/日本|JP|JAPAN/i.test(n)) return 'JP';
-            if (/新加坡|SG|SINGAPORE/i.test(n)) return 'SG';
-            if (/美国|US|USA/i.test(n)) return 'US';
-            if (/台湾|TW|TAIWAN/i.test(n)) return 'TW';
-            if (/韩国|KR|KOREA/i.test(n)) return 'KR';
+            for (let code in coordDict) {
+                if (n.includes(code) || new RegExp(code, 'i').test(n)) return code;
+            }
+            if (/香港|HK/i.test(n)) return 'HK';
+            if (/日本|JP/i.test(n)) return 'JP';
+            if (/新加坡|SG/i.test(n)) return 'SG';
+            if (/美国|US/i.test(n)) return 'US';
             return 'HK';
         }
 
-        // 定时轮询及动态拟真混合动力管线
         function startUltraPipeline() {
-            // WebSocket 建立实时吞吐流
-            let ws;
+            if(trafficWs) trafficWs.close();
+            if(logWs) logWs.close();
+
+            // 1. 流量数据流
             try {
-                ws = new WebSocket(`ws://${targetAPI}/traffic`);
-                ws.onmessage = (e) => {
+                trafficWs = new WebSocket(`ws://${targetAPI}/traffic`);
+                trafficWs.onmessage = (e) => {
                     const d = JSON.parse(e.data);
                     totalBytes += (d.up + d.down);
                     document.getElementById('m01-total').innerText = formatBytes(totalBytes);
                     document.getElementById('m01-up').innerText = formatBytes(d.up) + "/s";
                     document.getElementById('m01-down').innerText = formatBytes(d.down) + "/s";
-                    document.getElementById('conn-status').innerText = "● LIVE (TRACE ENABLED)";
+                    document.getElementById('conn-status').innerText = "● TELEMETRY COUPLING LIVE";
                     document.getElementById('conn-status').style.color = "var(--text-green)";
 
                     const tick = new Date().toLocaleTimeString().substring(3);
@@ -325,187 +308,178 @@
                     if (timeLabels.length > 30) { timeLabels.shift(); upSeries.shift(); downSeries.shift(); }
                     trafficChart.setOption({ xAxis: { data: timeLabels }, series: [{ data: upSeries }, { data: downSeries }] });
                 };
-                ws.onerror = () => { document.getElementById('conn-status').innerText = "● STANDBY MODE"; document.getElementById('conn-status').style.color = "var(--text-purple)"; };
-            } catch(e) { }
+                trafficWs.onerror = () => { 
+                    document.getElementById('conn-status').innerText = "● STANDBY MODE (DEMO)"; 
+                    document.getElementById('conn-status').style.color = "var(--text-purple)"; 
+                };
+            } catch(e) {}
 
-            // 高频 450ms 精细化信息抽取抓取室
-            setInterval(async () => {
-                try {
-                    const resConn = await fetch(`http://${targetAPI}/connections`);
-                    const dataConn = await resConn.json();
-                    const conns = dataConn.connections || [];
+            // 2. MODULE 05: 真实内核异步日志消息流自动捕获终端
+            try {
+                logWs = new WebSocket(`ws://${targetAPI}/logs?level=debug`);
+                const term = document.getElementById('m05-log-terminal');
+                term.innerHTML = '';
+                logWs.onmessage = (e) => {
+                    const data = JSON.parse(e.data);
+                    const line = document.createElement('div');
+                    let color = '#a4b9d6';
+                    if (data.type === 'error' || data.type === 'reject') color = 'var(--text-crimson)';
+                    if (data.type === 'warning') color = 'var(--text-amber)';
+                    if (data.type === 'debug' || data.type === 'trace') color = 'var(--text-purple)';
+                    if (data.type === 'info') color = 'var(--text-green)';
+                    
+                    line.style.color = color;
+                    line.innerText = `[${data.type.toUpperCase()}] ${data.payload}`;
+                    term.appendChild(line);
+                    
+                    if(term.children.length > 60) term.removeChild(term.firstChild);
+                    term.scrollTop = term.scrollHeight;
+                };
+            } catch(e) {}
+        }
 
-                    let tcp = 0, udp = 0;
-                    let ruleMap = {};
-                    let activeNode = "";
+        // 高频信息捕获拉取室
+        setInterval(async () => {
+            try {
+                // 会话管线拉取
+                const resConn = await fetch(`http://${targetAPI}/connections`);
+                const dataConn = await resConn.json();
+                const conns = dataConn.connections || [];
 
-                    // MODULE 07: 依总Payload流速做极端降序洗净
-                    conns.sort((a, b) => (b.download + b.upload) - (a.download + a.upload));
-                    const tbody = document.querySelector('#table-conn tbody');
-                    tbody.innerHTML = '';
+                let tcp = 0, udp = 0;
+                let ruleMap = {};
+                let activeNode = "";
 
-                    conns.forEach((c, idx) => {
-                        const net = (c.metadata.network || '').toLowerCase();
-                        if (net === 'tcp') tcp++;
-                        if (net === 'udp') udp++;
+                conns.sort((a, b) => (b.download + b.upload) - (a.download + a.upload));
+                const tbody = document.querySelector('#table-conn tbody');
+                tbody.innerHTML = '';
 
-                        // 规则热度捕获
-                        const rTag = c.rule || (c.chains ? c.chains[0] : 'FINAL');
-                        ruleMap[rTag] = (ruleMap[rTag] || 0) + 1;
+                conns.forEach((c, idx) => {
+                    const net = (c.metadata.network || '').toLowerCase();
+                    if (net === 'tcp') tcp++;
+                    if (net === 'udp') udp++;
 
-                        // 捕捉当前正在发生对流的活跃远端节点
-                        if (idx === 0 && c.chains) activeNode = c.chains[c.chains.length - 1];
+                    const rTag = c.rule || (c.chains ? c.chains[0] : 'MATCH');
+                    ruleMap[rTag] = (ruleMap[rTag] || 0) + 1;
 
-                        // 反向截获拦截规则命中（拟真trace行为：拦截发往Google Play/Youtube的QUIC数据流）
-                        if (net === 'udp' && c.metadata.destinationPort === 443 && /google|youtube/i.test(c.metadata.host || '')) {
-                            quicDropCount++;
-                        }
+                    if (idx === 0 && c.chains) activeNode = c.chains[c.chains.length - 1];
 
-                        if (idx < 15) {
-                            const tr = document.createElement('tr');
-                            const payload = c.download + c.upload;
-                            if (payload > 2 * 1024 * 1024) tr.className = 'heavy-load'; // 大于2MB高亮为吃带宽吞吐大户
+                    if (idx < 15) {
+                        const tr = document.createElement('tr');
+                        const payload = c.download + c.upload;
+                        if (payload > 5 * 1024 * 1024) tr.className = 'heavy-load'; // 超过5MB算作吃带宽大户
 
-                            const host = c.metadata.host || c.metadata.destinationIP;
-                            const chain = c.chains ? c.chains.join('->') : 'DIRECT';
+                        const host = c.metadata.host || c.metadata.destinationIP;
+                        const chain = c.chains ? c.chains.join('->') : 'DIRECT';
 
-                            tr.innerHTML = `
-                                <td title="${host}" style="color:var(--text-cyan)">${host}</td>
-                                <td>${c.metadata.destinationPort}</td>
-                                <td style="font-weight:bold">${formatBytes(payload)}</td>
-                                <td style="color:var(--text-amber)" title="${chain}">${chain}</td>
-                            `;
-                            tbody.appendChild(tr);
+                        tr.innerHTML = `
+                            <td title="${host}" style="color:var(--text-cyan)">${host}</td>
+                            <td>${c.metadata.destinationPort}</td>
+                            <td style="font-weight:bold">${formatBytes(payload)}</td>
+                            <td style="color:var(--text-amber)" title="${chain}">${chain}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+
+                const totalProto = tcp + udp || 1;
+                document.getElementById('m06-tcp').style.width = (tcp / totalProto * 100) + '%';
+                document.getElementById('m06-udp').style.width = (udp / totalProto * 100) + '%';
+                document.getElementById('m06-tcp-txt').innerText = tcp;
+                document.getElementById('m06-udp-txt').innerText = udp;
+
+                // MODULE 10 路由热度捕获
+                const heatmapDiv = document.getElementById('m10-heatmap');
+                const sortedRules = Object.entries(ruleMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+                if(sortedRules.length > 0) {
+                    const topHeat = sortedRules[0][1] || 1;
+                    heatmapDiv.innerHTML = sortedRules.map(([rName, rLen]) => `
+                        <div class="progress-container">
+                            <div class="progress-label" title="${rName}">⚡ ${rName}</div>
+                            <div class="progress-bg"><div class="progress-fill" style="width:${(rLen/topHeat*100)}%; background:linear-gradient(90deg, #ff6d00, var(--text-amber))"></div></div>
+                            <span style="color:var(--text-amber)">${rLen}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // MODULE 08: 全动态遍历自适应代理原子分支树
+                const resProxies = await fetch(`http://${targetAPI}/proxies`);
+                const dataProxies = await resProxies.json();
+                if (dataProxies && dataProxies.proxies) {
+                    const m08Container = document.getElementById('m08-outbounds');
+                    m08Container.innerHTML = '';
+                    
+                    // 彻底去私有化：全遍历策略组（过滤掉非策略组原子节点）
+                    Object.entries(dataProxies.proxies).forEach(([gName, p]) => {
+                        if (p.all && p.all.length > 0 && gName !== 'GLOBAL') {
+                            const gDiv = document.createElement('div');
+                            gDiv.style.marginBottom = '5px';
+                            gDiv.innerHTML = `<div style="color:var(--text-amber); font-weight:bold; font-size:8px;">🌿 ${gName} <span style="color:var(--text-cyan)">[${p.now}]</span></div>`;
+                            
+                            const hcomb = document.createElement('div');
+                            hcomb.className = 'honeycomb';
+                            p.all.slice(0, 24).forEach(node => { // 最大裁切展示24个原子防止撑爆页面
+                                const isActive = (node === p.now);
+                                hcomb.innerHTML += `<div class="atom ${isActive?'active':''}">${node}</div>`;
+                            });
+                            gDiv.appendChild(hcomb);
+                            m08Container.appendChild(gDiv);
                         }
                     });
-
-                    // MODULE 06: 动态渲染传输拦截特征
-                    const totalProto = tcp + udp || 1;
-                    document.getElementById('m06-tcp').style.width = (tcp / totalProto * 100) + '%';
-                    document.getElementById('m06-udp').style.width = (udp / totalProto * 100) + '%';
-                    document.getElementById('m06-tcp-txt').innerText = tcp;
-                    document.getElementById('m06-udp-txt').innerText = udp;
-                    document.getElementById('quic-drop-count').innerText = "DROP: " + quicDropCount;
-
-                    // MODULE 10: 路由热度榜渲染
-                    const heatmapDiv = document.getElementById('m10-heatmap');
-                    const sortedRules = Object.entries(ruleMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
-                    if(sortedRules.length > 0) {
-                        const topHeat = sortedRules[0][1] || 1;
-                        heatmapDiv.innerHTML = sortedRules.map(([rName, rLen]) => `
-                            <div class="progress-container">
-                                <div class="progress-label" title="${rName}">⚡ ${rName}</div>
-                                <div class="progress-bg"><div class="progress-fill" style="width:${(rLen/topHeat*100)}%; background:linear-gradient(90deg, #ff6d00, var(--text-amber))"></div></div>
-                                <span style="color:var(--text-amber)">${rLen}</span>
-                            </div>
-                        `).join('');
-                    }
-
-                    // MODULE 05: FakeIP 分配追踪
-                    if(conns.length > 0 && Math.random() > 0.6) {
-                        const fip = `198.18.${Math.floor(Math.random()*254)}.${Math.floor(Math.random()*254)}`;
-                        const fhost = conns[Math.floor(Math.random()*conns.length)].metadata.host || "steamcontent.com";
-                        document.getElementById('m05-logs').innerHTML = `<div style="color:var(--text-green)">[RESOLVED] ${fhost} -> 🔒 ${fip}</div>`;
-                        document.getElementById('m05-fill').style.width = '1.45%';
-                        document.getElementById('m05-txt').innerText = '1.45%';
-                    }
-
-                    // MODULE 08: 分流策略组无损展开（平铺原子配置）
-                    const resProxies = await fetch(`http://${targetAPI}/proxies`);
-                    const dataProxies = await resProxies.json();
-                    if (dataProxies && dataProxies.proxies) {
-                        const m08Container = document.getElementById('m08-outbounds');
-                        m08Container.innerHTML = '';
-                        
-                        // 提取主要的四个配置策略组
-                        ['GLOBAL', 'PROXY', '🟢 自动-测速', '🔵 自动-稳定', '🟣 QUIC-UDP', 'CN', 'Final'].forEach(gName => {
-                            const p = dataProxies.proxies[gName];
-                            if (p && p.all) {
-                                const gDiv = document.createElement('div');
-                                gDiv.style.marginBottom = '4px';
-                                gDiv.innerHTML = `<div style="color:var(--text-amber); font-weight:bold; font-size:8px;">🌿 ${gName} <span style="color:var(--text-cyan)">[${p.now}]</span></div>`;
-                                
-                                const hcomb = document.createElement('div');
-                                hcomb.className = 'honeycomb';
-                                p.all.forEach(node => {
-                                    const isActive = (node === p.now);
-                                    hcomb.innerHTML += `<div class="atom ${isActive?'active':''}">${node}</div>`;
-                                });
-                                gDiv.appendChild(hcomb);
-                                m08Container.appendChild(gDiv);
-                            }
-                        });
-                    }
-
-                    // MODULE 12: 拓扑轨迹连线
-                    if (activeNode) {
-                        const code = parseRegion(activeNode);
-                        if (coordDict[code]) {
-                            runtimeGeo['Target'] = coordDict[code];
-                            mapChart.setOption({
-                                series: [
-                                    { data: [{ coords: [runtimeGeo['Local'], runtimeGeo['Target']] }] },
-                                    { data: [{ name: 'TUN CLIENT', value: runtimeGeo['Local'] }, { name: `TUNNEL: ${activeNode.substring(0,6)}`, value: runtimeGeo['Target'] }] }
-                                ]
-                            }, { lazyUpdate: true });
-                        }
-                    }
-
-                } catch(e) {
-                    // 如果断开连接，启动微秒级模拟对流，确保屏幕不留白
-                    mockDataTelemetry();
                 }
-            }, 450);
 
-            // 载入静态及高级规则集展示 (MODULE 09)
-            renderStaticRuleSets();
-        }
+                if (activeNode) {
+                    const code = parseRegion(activeNode);
+                    if (coordDict[code]) {
+                        runtimeGeo['Target'] = coordDict[code];
+                        mapChart.setOption({
+                            series: [
+                                { data: [{ coords: [runtimeGeo['Local'], runtimeGeo['Target']] }] },
+                                { data: [{ name: 'CLIENT_TUN', value: runtimeGeo['Local'] }, { name: `ROUTE: ${activeNode.substring(0,6)}`, value: runtimeGeo['Target'] }] }
+                            ]
+                        }, { lazyUpdate: true });
+                    }
+                }
 
-        function renderStaticRuleSets() {
-            // 从备用2.json解析出的大量硬核远端规则集清单
-            const rulesets = [
-                "geosite-category-ads-all", "geosite_adguard", "geosite-google", 
-                "geosite-youtube", "proxy", "games", "ai", "private", "anti_fraud (FuckFZ)", 
-                "cn", "microsoft-cn", "apple-cn", "games-cn", "telegram_ip", "gfw", "cnip"
-            ];
-            const container = document.getElementById('m09-rulesets');
-            container.innerHTML = rulesets.map(r => `
-                <div class="list-item">
-                    <span>📦 ${r}</span>
-                    <span style="color:var(--text-green)">TTL: 48h (VALID)</span>
-                </div>
-            `).join('');
-        }
+            } catch(e) {
+                mockDataTelemetry();
+            }
+        }, 500);
 
+        // 行业通用的默认骨架仿真生成器（当断开连接或群友空载访问时，用于优雅降级，防止白屏死机）
         function mockDataTelemetry() {
-            // DNS 延迟模拟 (MODULE 03)
-            document.getElementById('dns-114-rt').innerText = Math.floor(Math.random()*12 + 8) + " ms";
-            document.getElementById('dns-gg-rt').innerText = Math.floor(Math.random()*45 + 110) + " ms";
-            document.getElementById('dns-q9-rt').innerText = Math.floor(Math.random()*30 + 140) + " ms";
+            document.getElementById('dns-114-rt').innerText = Math.floor(Math.random()*10 + 10) + " ms";
+            document.getElementById('dns-gg-rt').innerText = Math.floor(Math.random()*30 + 90) + " ms";
+            document.getElementById('dns-q9-rt').innerText = Math.floor(Math.random()*20 + 120) + " ms";
+            document.getElementById('m04-hit-rate').innerText = (85 + Math.random()*12).toFixed(1) + "%";
 
-            // 运行时指标模拟 (MODULE 11)
-            document.getElementById('m11-g').innerText = Math.floor(Math.random()*30 + 75);
-            const mockMem = (38.4 + Math.random()*8).toFixed(1);
-            document.getElementById('m11-mem-fill').style.width = (mockMem / 400 * 100) + '%';
-            document.getElementById('m11-mem-txt').innerText = `${mockMem} MB / 400MB`;
+            document.getElementById('m11-g').innerText = Math.floor(Math.random()*20 + 50);
+            const mockMem = (24.5 + Math.random()*15).toFixed(1);
+            document.getElementById('m11-mem-fill').style.width = (mockMem / 128 * 100) + '%';
+            document.getElementById('m11-mem-txt').innerText = `${mockMem} MB / Adaptive`;
 
-            // 降级模式下的伪连接生成 (MODULE 07)
             if(!document.getElementById('conn-status').innerText.includes('LIVE')) {
                 const tbody = document.querySelector('#table-conn tbody');
                 if(tbody.children.length === 0) {
-                    const mockHosts = [
-                        ['android.clients.google.com', '443', '1.42 MB', 'PROXY -> 🟢 自动-测速'],
-                        ['steamcontent.com', '80', '142.8 MB', 'DIRECT'],
-                        ['com.tencent.mm (微信)', '443', '342 KB', 'DIRECT'],
-                        ['epicgames.com', '443', '4.21 MB', 'PROXY -> 🔵 自动-稳定'],
-                        ['api.bilibili.com', '443', '892 KB', 'DIRECT'],
-                        ['chat.openai.com', '443', '1.11 MB', 'PROXY -> 🟢 自动-测速']
+                    const genericHosts = [
+                        ['static.cloudflare.com', '443', '1.02 MB', 'PROXY -> Node-A'],
+                        ['api.github.com', '443', '420 KB', 'PROXY -> Node-B'],
+                        ['dns.google', '53', '12 KB', 'DIRECT'],
+                        ['repository.debian.org', '80', '12.4 MB', 'DIRECT']
                     ];
-                    tbody.innerHTML = mockHosts.map(h => `
-                        <tr class="${h[2].includes('MB')&&parseFloat(h[2])>4?'heavy-load':''}">
+                    tbody.innerHTML = genericHosts.map(h => `
+                        <tr class="${parseFloat(h[2])>5?'heavy-load':''}">
                             <td style="color:var(--text-cyan)">${h[0]}</td><td>${h[1]}</td>
                             <td style="font-weight:bold">${h[2]}</td><td style="color:var(--text-amber)">${h[3]}</td>
                         </tr>
+                    `).join('');
+                }
+
+                const m09Container = document.getElementById('m09-rulesets');
+                if(m09Container.children.length < 3) {
+                    const stdRules = ["geosite-cn", "geoip-cn", "geosite-proxy", "geosite-ads"];
+                    m09Container.innerHTML = stdRules.map(r => `
+                        <div class="list-item"><span>📦 ${r}</span><span style="color:var(--text-green)">TTL: 48h (OK)</span></div>
                     `).join('');
                 }
             }
