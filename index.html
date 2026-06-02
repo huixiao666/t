@@ -2,77 +2,67 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>SING-BOX 内核超视距态势大屏 v8.0 (完整回归版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SING-BOX 全核态势 v9.0 实时版</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
-        :root { --bg: #010306; --panel: rgba(2, 6, 16, 0.95); --cyan: #00e5ff; --border: #081b3d; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Consolas', monospace; overflow-x: hidden; }
+        :root { --bg: #010306; --cyan: #00e5ff; --panel: rgba(5, 12, 25, 0.95); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Consolas', monospace; }
         
-        /* 1. 地图全屏顶层 */
-        #map-top { width: 100vw; height: 35vh; border-bottom: 2px solid var(--cyan); }
-        
-        /* 2. 核心矩阵容器 */
-        .grid-wrapper { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 6px; 
-            padding: 8px; 
+        /* 布局定义：地图全占首行 */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-areas: 
+                "map map map map"
+                "m1 m2 m3 m4"
+                "m5 m6 m7 m8"
+                "m9 m10 m11 m12"
+                "m13 m14 m15 m16";
+            gap: 8px; padding: 10px; height: 100vh;
         }
+
+        #map-top { grid-area: map; height: 35vh; border: 1px solid #081b3d; }
         
-        /* 手机端适配：改为 2 列或 1 列 */
-        @media (max-width: 900px) { .grid-wrapper { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .grid-wrapper { grid-template-columns: 1fr; } }
-        
-        .panel { 
-            background: var(--panel); border: 1px solid var(--border); 
-            padding: 6px; height: 110px; overflow: hidden;
-            display: flex; flex-direction: column;
+        .panel { background: var(--panel); border: 1px solid #081b3d; padding: 5px; overflow: hidden; display: flex; flex-direction: column; }
+        .title { color: var(--cyan); font-size: 10px; font-weight: bold; border-bottom: 1px solid #081b3d; }
+        .data-live { font-size: 11px; color: #fff; margin-top: 5px; word-break: break-all; }
+
+        @media (max-width: 800px) {
+            .dashboard-layout { grid-template-columns: 1fr; grid-template-areas: "map" "m1" "m2"...; }
         }
-        .title { color: var(--cyan); font-size: 10px; font-weight: bold; border-bottom: 1px solid var(--border); margin-bottom: 5px; }
-        .content { font-size: 9px; color: #8da4c4; flex-grow: 1; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-    <div id="map-top"></div>
-
-    <div class="grid-wrapper" id="matrix">
+    <div class="dashboard-layout">
+        <div id="map-top"></div>
+        <div class="panel" style="grid-area: m1;"><div class="title">01 实时吞吐</div><div class="data-live" id="m01">Loading...</div></div>
+        <div class="panel" style="grid-area: m5;"><div class="title">05 日志输出</div><div class="data-live" id="m05" style="font-size: 8px;">...</div></div>
         </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <script>
-        // 地图初始化
-        const m = echarts.init(document.getElementById('map-top'));
-        m.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#020510' } } });
+        const map = echarts.init(document.getElementById('map-top'));
+        map.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#020510' } } });
 
-        // 模块配置列表 (每一个都是 sing-box 官方 Spec 核心)
-        const modules = [
-            { id: 1, name: "BANDWIDTH | 吞吐动力学", desc: "Up: 0B/s | Down: 0B/s" },
-            { id: 2, name: "SNIFFER | 入站嗅探器", desc: "Status: Active | Protocol: TLS" },
-            { id: 3, name: "DNS CASCADING | 级联解析", desc: "Primary: DoH | Latency: 42ms" },
-            { id: 4, name: "DNS CACHE | 缓存插件", desc: "HitRate: 94.2% | Size: 1024" },
-            { id: 5, name: "LOG TERMINAL | 日志终端", desc: "[INFO] Proxy initialized..." },
-            { id: 6, name: "L4 INTERCEPT | 四层传输", desc: "TCP: 18 | UDP: 4" },
-            { id: 7, name: "CONN PIPELINE | 会话管道", desc: "Active: 22 | Handled: 158" },
-            { id: 8, name: "PROXY ATOMS | 策略分流", desc: "Selected: HK-Node-01" },
-            { id: 9, name: "RULE-SET | SRS规则链", desc: "Loaded: Geo-CN, Proxy" },
-            { id: 10, name: "ROUTING HEAT | 路由热度", desc: "Direct: 78% | Proxy: 22%" },
-            { id: 11, name: "GO RUNTIME | 运行指标", desc: "Mem: 34MB | GoRoutines: 58" },
-            { id: 12, name: "TOPOLOGY | 全球态势", desc: "Active Edges: 5" },
-            { id: 13, name: "NTP SYNC | 时间对齐", desc: "Offset: 0.0012ms" },
-            { id: 14, name: "PROCESS | 进程审计", desc: "PID: 1245 | Path: /bin/sh" },
-            { id: 15, name: "CACHE_FILE | 固化存储", desc: "Store_FakeIP: Enable" },
-            { id: 16, name: "MULTIPLEX | 多路复用", desc: "Streams: 6/8 | Pacing: On" }
-        ];
+        // 核心 WebSocket 驱动：将数据注入指定 ID
+        function connectKernel() {
+            // 请确保你的 sing-box 已开启 external_controller
+            const ws = new WebSocket("ws://127.0.0.1:9090/traffic");
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // 实时更新吞吐数据
+                document.getElementById('m01').innerText = `↑ ${data.up} | ↓ ${data.down}`;
+                
+                // 实时更新其他逻辑...
+            };
+            
+            ws.onerror = () => { document.getElementById('m01').innerText = "连接失败，请检查 API"; };
+        }
 
-        const mat = document.getElementById('matrix');
-        modules.forEach(m => {
-            const p = document.createElement('div');
-            p.className = 'panel';
-            p.innerHTML = `<div class="title">0${m.id} ${m.name}</div><div class="content">${m.desc}</div>`;
-            mat.appendChild(p);
-        });
+        connectKernel();
     </script>
 </body>
 </html>
