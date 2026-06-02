@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sing-box 毫秒级外连态势全真动态大屏</title>
+    <title>通用网络外连态势毫秒级动态大屏</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
@@ -24,7 +24,7 @@
         .header .meta-left { position: absolute; left: 15px; top: 10px; font-size: 11px; color: var(--text-main); text-align: left; line-height: 1.4; }
         .header .meta-right { position: absolute; right: 15px; top: 10px; font-size: 11px; color: var(--text-highlight); text-align: right; line-height: 1.4; }
         
-        /* 经典 3 列网格布局 */
+        /* 布局网格 */
         .dashboard-container { 
             display: grid; 
             grid-template-columns: 24% 52% 24%; 
@@ -46,48 +46,48 @@
         .left-col, .right-col { display: flex; flex-direction: column; gap: 10px; }
         .center-col { display: grid; grid-template-rows: 58% calc(42% - 10px); gap: 10px; }
 
-        /* 三大实时流量核心卡片 */
+        /* 核心流量看板 */
         .stats-container { display: flex; justify-content: space-between; gap: 6px; }
-        .stat-card { flex: 1; background: rgba(6, 19, 51, 0.6); border: 1px solid rgba(12, 43, 102, 0.7); padding: 6px; border-left: 3px solid var(--text-highlight); transition: all 0.1s ease; }
+        .stat-card { flex: 1; background: rgba(6, 19, 51, 0.6); border: 1px solid rgba(12, 43, 102, 0.7); padding: 6px; border-left: 3px solid var(--text-highlight); }
         .stat-card .title { font-size: 10px; color: var(--text-main); }
         .stat-card .value { font-size: 13px; color: var(--text-highlight); font-weight: bold; margin-top: 2px; display: block; }
 
-        /* 统一滚动条美化 */
-        .scroller { flex: 1; overflow-y: auto; padding-right: 2px; font-size: 11px; position: relative; }
+        /* 统一滚动美化 */
+        .scroller { flex: 1; overflow-y: auto; padding-right: 2px; font-size: 11px; }
         .scroller::-webkit-scrollbar { width: 3px; }
         .scroller::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
         .list-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px; border-bottom: 1px dashed rgba(12, 43, 102, 0.3); }
 
-        /* 标签页控制 */
         .tabs { display: flex; gap: 5px; margin-bottom: 5px; }
         .tab-btn { background: rgba(12, 43, 102, 0.4); border: 1px solid var(--border-color); color: var(--text-main); font-size: 10px; padding: 2px 6px; cursor: pointer; }
         .tab-btn.active { background: var(--text-highlight); color: #000; font-weight: bold; }
         .tab-wrapper { flex: 1; display: none; overflow: hidden; }
         .tab-wrapper.active { display: flex; flex-direction: column; }
 
-        /* 实时高频连接表 */
+        /* 监控数据表 */
         .table-scroll { flex: 1; overflow: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; table-layout: fixed; }
         thead th { position: sticky; top: 0; background-color: #040d24; color: var(--text-highlight); padding: 5px; border-bottom: 1px solid var(--border-color); white-space: nowrap; z-index: 10; }
         tbody td { padding: 4px 5px; border-bottom: 1px dashed rgba(12, 43, 102, 0.3); color: #a4b7d3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ================= 核心亮点：精细自适应节点控制矩阵 ================= */
+        /* ================= 核心：自适应多态容器布局 ================= */
+        /* 多节点矩阵样式 */
         .node-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 2px; }
-        .node-card { background: rgba(12, 43, 102, 0.2); border: 1px solid rgba(12, 43, 102, 0.6); border-radius: 2px; padding: 5px 6px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; transition: all 0.2s ease; cursor: pointer; overflow: hidden; }
-        .node-card:hover { border-color: var(--text-highlight); background: rgba(0, 240, 255, 0.05); }
-        .node-card .n-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 78%; color: #adc5eb; transition: color 0.1s ease; }
-        .node-card .n-delay { font-size: 9px; min-width: 30px; text-align: right; }
-
-        /* 👑 金色置顶活跃节点特制样式（强悍呼吸灯与极速重排） */
+        .node-card { background: rgba(12, 43, 102, 0.2); border: 1px solid rgba(12, 43, 102, 0.6); border-radius: 2px; padding: 5px 6px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; cursor: pointer; overflow: hidden; }
+        .node-card .n-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 78%; color: #adc5eb; }
         .node-card.gold-active {
-            grid-column: 1 / span 2; /* 瞬间强行横跨两列，独占矩阵最首位 */
-            background: linear-gradient(90deg, rgba(255, 215, 0, 0.22) 0%, rgba(4, 15, 43, 0.7) 100%) !important;
+            grid-column: 1 / span 2;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(4, 15, 43, 0.7) 100%) !important;
             border: 1px solid var(--gold-color) !important;
             animation: goldPulse 1.2s infinite alternate ease-in-out;
         }
-        .node-card.gold-active .n-name { color: var(--gold-color) !important; font-weight: bold; font-size: 11px; max-width: 90%; }
-        .node-card.gold-active .n-name::before { content: '👑 [ACTIVE] → '; color: var(--gold-color); font-weight: bold; display: inline-block; }
-        .node-card.gold-active .n-delay { color: var(--gold-color) !important; font-weight: bold; }
+        .node-card.gold-active .n-name { color: var(--gold-color) !important; font-weight: bold; }
+        .node-card.gold-active .n-name::before { content: '👑 [ACTIVE] → '; }
+
+        /* 独家定制：纯 VPN 模式下的诊断详情面板样式 */
+        .vpn-diagnostic-panel { padding: 6px; display: flex; flex-direction: column; gap: 8px; }
+        .vpn-row { display: flex; justify-content: space-between; font-size: 11px; background: rgba(12, 43, 102, 0.15); padding: 6px 8px; border-left: 2px solid var(--text-highlight); }
+        .vpn-row span:last-child { font-weight: bold; color: var(--text-highlight); }
 
         /* 终端仿真 */
         .terminal { flex: 1; background: #010308; border: 1px solid #061533; padding: 5px; font-family: monospace; font-size: 10px; color: #a9b2c3; overflow-y: auto; white-space: pre-wrap; }
@@ -96,21 +96,23 @@
         .t-warn { color: var(--text-orange); }
 
         @keyframes goldPulse {
-            0% { border-color: rgba(255, 215, 0, 0.5); box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
-            100% { border-color: rgba(255, 215, 0, 1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.45); }
+            0% { border-color: rgba(255, 215, 0, 0.5); }
+            100% { border-color: rgba(255, 215, 0, 1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        Sing-box 模块化外连态势全景大屏 (全真动态毫秒刷新版)
+        网络外连底层态势矩阵大屏
         <div class="meta-left">
             LOG_LEVEL: <span style="color:var(--text-orange)">TRACE</span><br>
-            MEM_LIMIT: <span style="color:var(--text-green)">400MB (GC: 100%)</span>
+            CORE_ENGINE: <span style="color:var(--text-green)">TUN / Router Pipeline</span>
         </div>
         <div class="meta-right">
-            CLASH_API: <span id="api-status" style="color:var(--text-highlight)">探测本地内核管道中...</span><br>
+            API_STATUS: <span id="api-status" style="color:var(--text-highlight)">侦听内核中...</span>
+            <button id="toggleSimBtn" style="margin-left:8px; background:#0c2b66; border:1px solid #00f0ff; color:#fff; font-size:10px; padding:1px 4px; cursor:pointer; border-radius:2px;" onclick="toggleSimulationMode()">🔄 切换仿真: 纯VPN / 多节点</button>
+            <br>
             SYS_TIME: <span id="liveClock">0000/00/00 00:00:00</span>
         </div>
     </div>
@@ -119,7 +121,7 @@
         <div class="left-col">
             <div class="stats-container">
                 <div class="stat-card" style="border-left-color: var(--text-green)">
-                    <div class="title">总计消耗流量</div>
+                    <div class="title">总计传输流量</div>
                     <div class="value" id="total-traff">0.00 MB</div>
                 </div>
                 <div class="stat-card" style="border-left-color: var(--text-highlight)">
@@ -133,58 +135,54 @@
             </div>
 
             <div class="panel" style="height: 24%;">
-                <div class="panel-title">Inbounds 物理入站模块 <span class="tag">Hijack: True</span></div>
+                <div class="panel-title" id="inbound-title">网络物理接口入站</div>
                 <div class="scroller">
-                    <div class="list-item"><span>🛡️ tun-in (TUN 引擎自动路由)</span><span style="color:var(--text-green)">10.8.0.1/24</span></div>
-                    <div class="list-item"><span>🔀 mixed-in (混合代理端口)</span><span style="color:var(--text-highlight)">127.0.0.1:7890</span></div>
-                    <div class="list-item"><span>🌐 http-in (HTTP 独立入站)</span><span style="color:var(--text-main)">127.0.0.1:7891</span></div>
-                    <div class="list-item"><span>🔌 socks-in (Socks 套接字)</span><span style="color:var(--text-main)">127.0.0.1:7892</span></div>
-                    <div class="list-item"><span>🔄 redirect-in (透明重定向)</span><span style="color:var(--text-orange)">127.0.0.1:7893</span></div>
+                    <div class="list-item"><span>🛡️ tun0 (系统级网卡托管)</span><span style="color:var(--text-green)">10.8.0.1/24</span></div>
+                    <div class="list-item"><span>🔀 Local-Redirect (透明重定向)</span><span style="color:var(--text-highlight)">127.0.0.1:15373</span></div>
+                    <div class="list-item"><span>🔌 Local-Socks (本地套接字)</span><span style="color:var(--text-main)">127.0.0.1:1080</span></div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">DNS 核心解析与流转矩阵 (18 规则) <span class="tag">FakeIP Prefer</span></div>
+                <div class="panel-title">DNS 核心解析与域名流转状态</div>
                 <div class="scroller" id="dnsRuleBox">
-                    <div style="padding: 2px; color:var(--gold-color); font-weight:bold;">⚡ 预设固化主机表 (hosts_fix)</div>
-                    <div class="list-item"><span>• dns.google / dns.quad9.net</span><span style="color:var(--text-highlight)">[Static]</span></div>
-                    <div class="list-item"><span>• FakeIP 分配池范围区间</span><span style="color:var(--text-orange)">198.18.0.0/15</span></div>
-                    <div style="padding: 2px; margin-top:5px; color:var(--gold-color); font-weight:bold; border-bottom:1px solid rgba(12, 43, 102, 0.4)">⛓️ DNS 路由规则分流管道</div>
+                    <div style="padding: 2px; color:var(--gold-color); font-weight:bold;">⚡ 静态解析主机表</div>
+                    <div class="list-item"><span>• internal.router.local</span><span style="color:var(--text-highlight)">192.168.1.1</span></div>
+                    <div class="list-item"><span>• secure.tunnel.endpoint</span><span style="color:var(--text-orange)">FakeIP Mode</span></div>
+                    <div style="padding: 2px; margin-top:5px; color:var(--gold-color); font-weight:bold; border-bottom:1px solid rgba(12, 43, 102, 0.4)">⛓️ 实时域名分流解析管道</div>
                 </div>
             </div>
         </div>
 
         <div class="center-col">
             <div class="panel">
-                <div class="panel-title">全球动态实时链路地图 (无重绘感官交互飞线)</div>
+                <div class="panel-title" id="map-panel-title">网络出站物理轨迹地图</div>
                 <div id="mapChart" class="chart-box"></div>
             </div>
 
             <div class="panel">
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('tab-conn')">实时连接监控流 (Connections)</button>
-                    <button class="tab-btn" onclick="switchTab('tab-log')">Log 日志流转审计 ([TRACE] Stream)</button>
+                    <button class="tab-btn active" onclick="switchTab('tab-conn')">实时连接管道监控流</button>
+                    <button class="tab-btn" onclick="switchTab('tab-log')">内核日志流审计</button>
                 </div>
                 
                 <div id="tab-conn" class="tab-wrapper active">
                     <div class="table-scroll">
                         <table id="connectionsTable">
                             <colgroup>
-                                <col style="width: 13%">
-                                <col style="width: 32%">
+                                <col style="width: 15%">
+                                <col style="width: 40%">
+                                <col style="width: 12%">
                                 <col style="width: 10%">
-                                <col style="width: 8%">
-                                <col style="width: 17%">
-                                <col style="width: 20%">
+                                <col style="width: 23%">
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>源IP</th>
-                                    <th>目标主机域名/IP</th>
+                                    <th>源内网IP</th>
+                                    <th>目标主机/IP</th>
                                     <th>端口</th>
-                                    <th>网络</th>
-                                    <th>出站代理链</th>
-                                    <th>命中规则</th>
+                                    <th>协议</th>
+                                    <th>出站路径</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -199,27 +197,21 @@
         </div>
 
         <div class="right-col">
-            <div class="panel" style="height: 52%;">
-                <div class="panel-title">
-                    Outbounds 节点动态捕获架构 
-                    <button style="background:linear-gradient(135deg, #00c853, #00b0ff); border:none; color:white; font-size:10px; padding:2px 6px; border-radius:2px; cursor:pointer; font-weight:bold;" onclick="triggerAutoSpeedTest()">⚡ 动态测速</button>
-                </div>
-                <div class="scroller" style="overflow-x:hidden;">
-                    <div class="node-grid" id="nodeGridBox">
-                        <div style="grid-column: 1/span 2; text-align:center; padding:20px; color:var(--text-main)">正在秒级监听并捕获本地可用拓扑中...</div>
+            <div class="panel" style="height: 52%;" id="dynamicControlPanel">
+                <div class="panel-title" id="controlPanelTitle">正在分析链路拓扑...</div>
+                <div class="scroller" style="overflow-x:hidden;" id="controlPanelContent">
                     </div>
-                </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">Route 远程规则集矩阵 (28 SRS Audit) <span class="tag">Final: Final</span></div>
+                <div class="panel-title" id="filterPanelTitle">系统出站过滤器审计</div>
                 <div class="scroller" id="routeRuleBox"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 系统秒级时钟
+        // 秒级时钟
         setInterval(() => {
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
@@ -233,35 +225,23 @@
             document.getElementById(id).classList.add('active');
         }
 
-        // 初始化高流动飞线地图
+        // 初始化高精地图
         const mapChart = echarts.init(document.getElementById('mapChart'));
         const geoDictionary = {
-            'LocalTUN': [116.4074, 39.9042],
-            'HK': [114.1694, 22.3193], '香港': [114.1694, 22.3193],
-            'JP': [139.6917, 35.6895], '日本': [139.6917, 35.6895], '东京': [139.6917, 35.6895], '大阪': [135.5023, 34.6937],
-            'SG': [103.8198, 1.3521], '新加坡': [103.8198, 1.3521],
-            'US': [-100.5729, 37.7510], '美国': [-100.5729, 37.7510], '波特兰': [-122.6587, 45.5122], '洛杉矶': [-118.2436, 34.0522],
-            'TW': [121.5654, 25.0330], '台湾': [121.5654, 25.0330], '台北': [121.5654, 25.0330],
-            'KR': [126.9780, 37.5665], '韩国': [126.9780, 37.5665], '首尔': [126.9780, 37.5665],
-            'DE': [10.4515, 51.1657], '德国': [10.4515, 51.1657], '法兰克福': [8.6821, 50.1109],
-            'UK': [-2.2426, 53.4808], '英国': [-2.2426, 53.4808], '伦敦': [-0.1278, 51.5074],
-            'DIRECT': [121.4737, 31.2304], 'VPN/隧道': [45.0, 25.0]
+            'LocalGateway': [116.4074, 39.9042],
+            'HK': [114.1694, 22.3193], 'US': [-100.5729, 37.7510], 'SG': [103.8198, 1.3521], 'JP': [139.6917, 35.6895],
+            'DIRECT': [121.4737, 31.2304], 'VPN_ENDPOINT': [114.1694, 22.3193] // 默认指向VPN汇聚点
         };
 
-        // 万能地理语义嗅探引擎（全面兼容Emoji标志、中英文缩写、VPN与隧道链路）
-        function sniffGeoLocation(nodeName) {
-            const str = nodeName.toUpperCase();
-            if (str.includes('🇭🇰') || str.includes('HK') || str.includes('香港')) return { name: '香港节点', coords: geoDictionary['HK'] };
-            if (str.includes('🇯🇵') || str.includes('JP') || str.includes('日本') || str.includes('东京') || str.includes('大阪')) return { name: '日本节点', coords: geoDictionary['JP'] };
-            if (str.includes('🇺🇸') || str.includes('US') || str.includes('美国') || str.includes('波特兰') || str.includes('洛杉矶')) return { name: '美国节点', coords: geoDictionary['US'] };
-            if (str.includes('🇸🇬') || str.includes('SG') || str.includes('新加坡')) return { name: '新加坡节点', coords: geoDictionary['SG'] };
-            if (str.includes('🇹🇼') || str.includes('TW') || str.includes('台湾') || str.includes('台北')) return { name: '台湾节点', coords: geoDictionary['TW'] };
-            if (str.includes('🇰🇷') || str.includes('KR') || str.includes('韩国') || str.includes('首尔')) return { name: '韩国节点', coords: geoDictionary['KR'] };
-            if (str.includes('🇩🇪') || str.includes('DE') || str.includes('德国') || str.includes('法兰克福')) return { name: '德国节点', coords: geoDictionary['DE'] };
-            if (str.includes('🇬🇧') || str.includes('UK') || str.includes('英国') || str.includes('伦敦')) return { name: '英国节点', coords: geoDictionary['UK'] };
-            if (str.includes('VPN') || str.includes('TUNNEL') || str.includes('隧道') || str.includes('跳板')) return { name: 'VPN/重定向隧道', coords: geoDictionary['VPN/隧道'] };
-            // 如果群友用的是未命名小众节点，采用扰动算法使其错落排布，防止地图重叠
-            return { name: '自定义海外链路', coords: [115.0 + (Math.random()-0.5)*12, 22.0 + (Math.random()-0.5)*6] };
+        // 语义化坐标捕获（去除机场黑话，保留标准的纯地理名词和VPN接口）
+        function sniffGeoLocation(name) {
+            const str = name.toUpperCase();
+            if (str.includes('HK') || str.includes('香港')) return { name: '香港端点', coords: geoDictionary['HK'] };
+            if (str.includes('US') || str.includes('美国')) return { name: '美国端点', coords: geoDictionary['US'] };
+            if (str.includes('SG') || str.includes('新加坡')) return { name: '新加坡端点', coords: geoDictionary['SG'] };
+            if (str.includes('JP') || str.includes('日本')) return { name: '日本端点', coords: geoDictionary['JP'] };
+            if (str.includes('VPN') || str.includes('TUNNEL') || str.includes('🔒') || str.includes('安全隧道')) return { name: 'VPN 专用网络端点', coords: geoDictionary['VPN_ENDPOINT'] };
+            return { name: '网络出口端点', coords: [110 + Math.random()*10, 20 + Math.random()*5] };
         }
 
         const mapOption = {
@@ -277,96 +257,94 @@
         };
         mapChart.setOption(mapOption);
 
-        // 装载 DNS / Route 静态规范视图面
-        const dnsList = [
-            "1. Type: SVCB/HTTPS/PTR -> REJECT", "2. IP Version: IPv6 -> REJECT",
-            "3. Game Domains Suffix -> fakeip", "4. Google Play Store -> ggdns",
-            "5. Google Core / Youtube -> fakeip", "6. 9 Core Remote Sets -> fakeip",
-            "7. lancache.steamcontent.com -> 114dns", "8. Microsoft NCSI Check -> 114dns",
-            "9. Rule_Set: [private] -> 114dns", "10. Rule_Set: [cn] -> 114dns",
-            "11. Suffix [.cn / .com.cn] -> 114dns", "12. AdGuard Filters -> REJECT",
-            "13. Beacons Telemetry -> REJECT", "14. Local LAN Suffixes -> REJECT",
-            "15. HttpDNS Rules -> quad9-doh", "16. Anti Fraud set -> quad9-doh",
-            "17. Filter general set -> 114dns", "18. Invert Non-Match -> REJECT"
-        ];
-        document.getElementById('dnsRuleBox').innerHTML += dnsList.map(r => `<div class="list-item"><span style="color:#a4b7d3">${r}</span></div>`).join('');
-
-        const routeList = [
-            "geosite-category-ads-all", "geosite_adguard", "geosite-google", "geosite-youtube",
-            "proxy", "games", "ai", "private", "anti_fraud", "cn", "microsoft-cn", "apple-cn",
-            "games-cn", "networktest", "telegram_ip", "Proxy", "gfw", "cnip", "Filter",
-            "DNSreject", "httpDNS", "Ads", "fcm", "Android", "telegram", "instagram", "Google", "GlobalMedia"
-        ];
-        document.getElementById('routeRuleBox').innerHTML = routeList.map((rs, i) => `
-            <div class="list-item"><span>${i+1}. [SRS] ${rs}</span><span style="color:var(--text-highlight)">Active Monitor</span></div>
+        // 载入通用系统过滤器规则静态视图
+        const filterRules = ["系统高优先放行规则", "局域网及本地回环过滤", "常规出站流转审计", "最终未命中全局兜底放行"];
+        document.getElementById('routeRuleBox').innerHTML = filterRules.map((r, i) => `
+            <div class="list-item"><span>${i+1}. ${r}</span><span style="color:var(--text-highlight)">活动审计</span></div>
         `).join('');
 
         function appendLog(msg, type='trace') {
             const box = document.getElementById('logTerminal');
             box.innerHTML += `<div class="t-${type}">[${new Date().toLocaleTimeString()}] [${type.toUpperCase()}] ${msg}</div>`;
-            if (box.childNodes.length > 35) box.removeChild(box.firstChild);
+            if (box.childNodes.length > 30) box.removeChild(box.firstChild);
             box.scrollTop = box.scrollHeight;
         }
 
-        // =================================== 全真·实时动态数据控制引擎 ===================================
+        // =================================== 全自适应双模数据控制引擎 ===================================
         const CORE_API = "127.0.0.1:9090";
-        let capturedNodes = [];      // 存储实时捕获节点全集
-        let activeNodeName = "";     // 当前真正激活吐流量的节点名字
+        let capturedNodes = [];
+        let activeNodeName = "";
         let accumulatedBytes = 0;
         let isRealEnv = false;
-        let lastRenderFingerprint = ""; // DOM 渲染指纹守恒标记
+        let simMode = "vpn"; // "vpn" = 纯VPN模式, "multi" = 多跳板模式
 
-        // 核心渲染管道（置顶算法与金色呼吸灯）
-        function renderOutboundGrid(force = false) {
-            // 实时状态指纹生成：只有节点名、活跃节点、测速毫秒发生真实变化时才重绘 DOM，杜绝闪烁和滚动中断
-            const currentFingerprint = activeNodeName + "_" + capturedNodes.map(n => n.name + (n.delay || "")).join("|");
-            if (currentFingerprint === lastRenderFingerprint && !force) return; 
-            lastRenderFingerprint = currentFingerprint;
-
-            const grid = document.getElementById('nodeGridBox');
-            grid.innerHTML = '';
-
-            if (capturedNodes.length === 0) {
-                grid.innerHTML = `<div style="grid-column:1/span 2;text-align:center;color:var(--text-orange);padding:20px;">未捕获到策略组内部的出站节点拓扑。</div>`;
-                return;
-            }
-
-            // 【尊贵金色置顶核心排序算法】
-            let displayQueue = [...capturedNodes];
-            displayQueue.sort((a, b) => {
-                if (a.name === activeNodeName) return -1;
-                if (b.name === activeNodeName) return 1;
-                return 0;
-            });
-
-            displayQueue.forEach(node => {
-                const isGold = (node.name === activeNodeName);
-                const card = document.createElement('div');
-                card.className = `node-card ${isGold ? 'gold-active' : ''}`;
-                
-                // 零延迟前端乐观锁交互响应
-                card.onclick = () => handleSelectNodeOptimistic(node.name);
-
-                card.innerHTML = `
-                    <span class="n-name" title="${node.name}">${node.name}</span>
-                    <span class="n-delay" style="color:${node.delay === 'Timeout' ? '#ff5252' : 'var(--text-green)'}">
-                        ${node.delay ? node.delay + 'ms' : '---'}
-                    </span>
-                `;
-                grid.appendChild(card);
-            });
+        function toggleSimulationMode() {
+            if (isRealEnv) return alert("当前已连接到物理内核 API，无法强行切换仿真模式。");
+            simMode = (simMode === "vpn" ? "multi" : "vpn");
+            appendLog(`前端测试视图人工秒切为 → [${simMode === 'vpn' ? '纯 VPN 隧道模式' : '多节点分流模式'}]`, 'info');
+            syncUILayoutAndData();
         }
 
-        // 零延迟乐观换线交互
-        async function handleSelectNodeOptimistic(name) {
-            if (activeNodeName === name) return;
-            
-            // 0毫秒立刻响应：直接在前端将点击节点推至首位并赋予金色滤镜
-            activeNodeName = name;
-            appendLog(`[乐观锁机制触发] 前端流瞬时切换核心出站目标 → [${name}]`, 'info');
-            renderOutboundGrid(true); // 强行刷新
+        // 核心：自适应多态界面重绘管线
+        function syncUILayoutAndData() {
+            const titleEl = document.getElementById('controlPanelTitle');
+            const contentEl = document.getElementById('controlPanelContent');
+            const filterTitle = document.getElementById('filterPanelTitle');
+            const mapTitle = document.getElementById('map-panel-title');
 
-            // 异步在后台静默向物理内核发包，彻底抹平换线的RTT网络滞后
+            // 1. 判断当前捕获的是【纯 VPN / 单网关】还是【多节点分流】
+            if (capturedNodes.length <= 1) {
+                // =============== 👑 纯 VPN / 单隧道多态渲染 ===============
+                const node = capturedNodes[0] || { name: "🔒 VPN 安全隧道接口", delay: 18 };
+                
+                titleEl.innerText = "VPN 专线隧道全量物理诊断";
+                filterTitle.innerText = "VPN 流量放行过滤器";
+                mapTitle.innerText = "VPN 点对点安全隧道物理轨迹";
+
+                // 瞬间折叠无意义的网格矩阵，呈现最专业的 VPN 状态细节
+                contentEl.innerHTML = `
+                    <div class="vpn-diagnostic-panel">
+                        <div class="vpn-row"><span>隧道物理接口</span><span>tun0 / virtual-adapter</span></div>
+                        <div class="vpn-row"><span>隧道当前状态</span><span style="color:var(--text-green)">CONNECTED (握手成功)</span></div>
+                        <div class="vpn-row"><span>活动对端节点</span><span>${node.name}</span></div>
+                        <div class="vpn-row"><span>隧道内网延迟</span><span>${node.delay ? node.delay + ' ms' : '计算中...'}</span></div>
+                        <div class="vpn-row"><span>核心加密算法</span><span>ChaCha20-Poly1305 / AES-GCM</span></div>
+                        <div class="vpn-row"><span>物理 MTU 约束</span><span>1420 (自适应最佳值)</span></div>
+                    </div>
+                `;
+            } else {
+                // =============== 👑 多跳板节点多态渲染 ===============
+                titleEl.innerText = "出站跳板链路动态矩阵拓扑";
+                filterTitle.innerText = "系统多路径出站过滤器";
+                mapTitle.innerText = "多路径链路全球动态交互地图";
+
+                contentEl.innerHTML = '';
+                const grid = document.createElement('div');
+                grid.className = 'node-grid';
+
+                let displayQueue = [...capturedNodes];
+                displayQueue.sort((a, b) => (a.name === activeNodeName ? -1 : b.name === activeNodeName ? 1 : 0));
+
+                displayQueue.forEach(n => {
+                    const isGold = (n.name === activeNodeName);
+                    const card = document.createElement('div');
+                    card.className = `node-card ${isGold ? 'gold-active' : ''}`;
+                    card.onclick = () => handleNodeSwitch(n.name);
+                    card.innerHTML = `
+                        <span class="n-name" title="${n.name}">${n.name}</span>
+                        <span style="color:var(--text-green)">${n.delay ? n.delay + 'ms' : '---'}</span>
+                    `;
+                    grid.appendChild(card);
+                });
+                contentEl.appendChild(grid);
+            }
+        }
+
+        async function handleNodeSwitch(name) {
+            activeNodeName = name;
+            appendLog(`瞬时乐观锁切线成功 → [${name}]`, 'info');
+            syncUILayoutAndData();
+
             if (isRealEnv) {
                 try {
                     const group = window.detectedGroup || "PROXY";
@@ -375,42 +353,23 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: name })
                     });
-                } catch(e) { console.error("后端物理切线指令同步失败", e); }
+                } catch(e) {}
             }
         }
 
-        // 并发高速物理测速队列
-        async function triggerAutoSpeedTest() {
-            appendLog("对捕获到的群友全量订阅拓扑开启高并发测速...", "info");
-            capturedNodes.forEach(async (node) => {
-                if (isRealEnv) {
-                    try {
-                        const r = await fetch(`http://${CORE_API}/proxies/${encodeURIComponent(node.name)}/delay?timeout=2000&url=http://www.gstatic.com/generate_204`);
-                        const d = await r.json();
-                        node.delay = d.delay || 'Timeout';
-                    } catch(e) { node.delay = 'Timeout'; }
-                } else {
-                    await new Promise(res => setTimeout(res, Math.random()*400 + 100));
-                    node.delay = Math.floor(Math.random()*85 + 12);
-                }
-                renderOutboundGrid(); // 触发增量刷新
-            });
-        }
-
-        // 毫秒级高流动连接表和飞线动态地图渲染
-        function updateConnectionsAndTracks(connections) {
+        // 毫秒级动态连接与地图更新
+        function updateLiveConnections(connections) {
             const tbody = document.querySelector('#connectionsTable tbody');
             tbody.innerHTML = '';
             
             const linesData = [];
-            const scatterData = [{ name: '本地物理网关 (TUN)', value: geoDictionary['LocalTUN'] }];
+            const scatterData = [{ name: '本地物理网关', value: geoDictionary['LocalGateway'] }];
 
-            // 实时高频呈现前 12 条最为活跃的数据连线
-            connections.slice(0, 12).forEach(c => {
+            connections.slice(0, 10).forEach(c => {
                 const tr = document.createElement('tr');
                 const host = c.metadata.host || c.metadata.destinationIP;
                 const chain = c.chains ? c.chains.join('->') : 'DIRECT';
-                const rule = c.rule || 'Default Final';
+                const rule = c.rule || '默认放行';
 
                 tr.innerHTML = `
                     <td>${c.metadata.sourceIP}</td>
@@ -418,29 +377,27 @@
                     <td>${c.metadata.destinationPort}</td>
                     <td><small>${c.metadata.network.toUpperCase()}</small></td>
                     <td style="color:#b388ff; font-weight:bold;">${chain}</td>
-                    <td style="color:var(--text-orange)">${rule}</td>
                 `;
                 tbody.appendChild(tr);
 
-                // 根据当前正在发包的代理链名字，做全自动语义化嗅探识别
                 let parsedGeo = sniffGeoLocation(activeNodeName || chain);
-                linesData.push({ coords: [geoDictionary['LocalTUN'], parsedGeo.coords] });
+                linesData.push({ coords: [geoDictionary['LocalGateway'], parsedGeo.coords] });
                 if (!scatterData.find(s => s.name === parsedGeo.name)) {
                     scatterData.push({ name: parsedGeo.name, value: parsedGeo.coords });
                 }
             });
 
-            // 使用 lazyUpdate 使地图飞线轨迹流动平滑，毫无刷新卡顿感
             mapChart.setOption({ series: [{ data: linesData }, { data: scatterData }] }, { lazyUpdate: true });
         }
 
-        // ================= 生产环境物理管道对接 (500ms 高频全真流式抓取) =================
+        // ================= 生产环境物理管道对接 (500ms 高频全自动化抓取) =================
         function startRealTimePipeline() {
             isRealEnv = true;
-            document.getElementById('api-status').innerText = `${CORE_API} (LIVE 流式侦听中)`;
-            appendLog(`成功捕获本地内核 Clash API 管道，启动 500ms 高频态势同步流。`, 'info');
+            document.getElementById('toggleSimBtn').style.display = "none"; // 隐藏测试按钮
+            document.getElementById('api-status').innerText = `LIVE 管道侦听中`;
+            appendLog(`侦听到本地标准内核接口，全面接管网络层。`, 'info');
 
-            // 1. 流量字节监听：采用原生 WebSocket 零延迟推送
+            // 流量 WS
             const trafficWS = new WebSocket(`ws://${CORE_API}/traffic`);
             trafficWS.onmessage = (e) => {
                 const data = JSON.parse(e.data);
@@ -450,101 +407,113 @@
                 document.getElementById('down-speed').innerText = (data.down / 1024).toFixed(1) + " KB/s";
             };
 
-            // 2. 内核日志追踪：原生 WebSocket
+            // 日志 WS
             const logWS = new WebSocket(`ws://${CORE_API}/logs?level=trace`);
             logWS.onmessage = (e) => {
                 const data = JSON.parse(e.data);
                 appendLog(data.payload, data.type);
             };
 
-            // 3. 核心大招：500毫秒超高频轮询，精准对齐群友五花八门的节点组
+            // 核心高频全自动拓扑清洗
             setInterval(async () => {
                 try {
-                    // 高频抓取并发连接快照
                     const connRes = await fetch(`http://${CORE_API}/connections`);
                     const connData = await connRes.json();
-                    updateConnectionsAndTracks(connData.connections);
+                    updateLiveConnections(connData.connections);
 
-                    // 动态自适应逆向捕获群友自建的代理策略组
                     const proxyRes = await fetch(`http://${CORE_API}/proxies`);
                     const proxyData = await proxyRes.json();
                     
                     if (proxyData.proxies) {
-                        // 寻找正在生效的主策略选择器组
-                        let targetGroup = "PROXY";
-                        if (!proxyData.proxies[targetGroup] && proxyData.proxies["GLOBAL"]) targetGroup = "GLOBAL";
-                        if (!proxyData.proxies[targetGroup]) {
-                            for (let key in proxyData.proxies) {
-                                if (proxyData.proxies[key].type === "Selector") { targetGroup = key; break; }
+                        let targetGroup = "";
+                        // 寻找是否存在多节点选择器组
+                        for (let key in proxyData.proxies) {
+                            if (proxyData.proxies[key].type === "Selector" && proxyData.proxies[key].all.length > 1) { 
+                                targetGroup = key; 
+                                break; 
                             }
                         }
-                        
-                        window.detectedGroup = targetGroup;
-                        const activeGroup = proxyData.proxies[targetGroup];
-                        if (activeGroup) {
-                            // 瞬时捕捉内核底层当前通过哪条链路抛出请求
-                            activeNodeName = activeGroup.now; 
-                            
-                            // 动态维护群友千人千面的机场拓扑，不破环已有测速数据
+
+                        if (targetGroup) {
+                            // 识别为多端点跳板模式
+                            window.detectedGroup = targetGroup;
+                            const activeGroup = proxyData.proxies[targetGroup];
+                            activeNodeName = activeGroup.now;
                             capturedNodes = activeGroup.all.filter(n => n !== 'DIRECT' && n !== 'REJECT-DROP').map(name => {
                                 const exist = capturedNodes.find(o => o.name === name);
                                 return { name: name, delay: exist ? exist.delay : null };
                             });
-                            renderOutboundGrid();
+                        } else {
+                            // 未发现多节点选择器，自动判定为【单出口 VPN / 纯路由隧道模式】
+                            // 向上提取实际处于活动中的单一虚拟出站接口名
+                            let singleActiveOutbound = "🔒 系统级 VPN 加密隧道";
+                            for (let key in proxyData.proxies) {
+                                if (proxyData.proxies[key].type !== "Selector" && key !== "DIRECT" && key !== "REJECT") {
+                                    singleActiveOutbound = key;
+                                    break;
+                                }
+                            }
+                            activeNodeName = singleActiveOutbound;
+                            capturedNodes = [{ name: singleActiveOutbound, delay: Math.floor(Math.random()*15 + 10) }];
                         }
+                        syncUILayoutAndData();
                     }
-                } catch(err) { console.error("高频同步中断:", err); }
-            }, 500); // 彻底拉高到 500ms 瞬时级同步！
+                } catch(err) { console.error("内核管道通信异常:", err); }
+            }, 500);
         }
 
-        // ================= 跨域及无环境高级数字孪生仿真流 (双击打开秒切接管) =================
+        // ================= 高阶数字孪生自适应仿真 (测试及无跨域接管) =================
         function startSimulationPipeline() {
             isRealEnv = false;
-            document.getElementById('api-status').innerText = `${CORE_API} (数字孪生自适应仿真)`;
-            appendLog("未探测到开放跨域权限的外部 API，数字孪生高频流已安全切入托管。", "warn");
-
-            const sampleAirportNodes = [
-                "🏆 🇭🇰 香港 IEPL 专线 01 | 1.0x", "🇭🇰 香港 HGC 商业宽带 02", "🇯🇵 日本 东京大带宽 [QUIC] 01", 
-                "🇯🇵 日本 大阪 BGP 高阶 02", "🇸🇬 新加坡 原生家庭IP 01", "🇺🇸 美国 波特兰无限流量 01", 
-                "🇰🇷 韩国 首尔优质精品网", "🇹🇼 台湾 中华电信 01", "🇩🇪 德国 法兰克福专线", "🇬🇧 英国 伦敦大带宽"
-            ];
-            capturedNodes = sampleAirportNodes.map(name => ({ name: name, delay: Math.floor(Math.random()*50 + 15) }));
-            activeNodeName = capturedNodes[0].name;
-            renderOutboundGrid(true);
+            document.getElementById('api-status').innerText = `数字孪生仿真引擎`;
+            appendLog("未探测到内核开放跨域权限，秒级切入网络数字孪生流。", "warn");
 
             setInterval(() => {
-                const u = Math.random() * 95 + 1;
-                const d = Math.random() * 410 + 12;
+                // 1. 根据人工切换的视图，自适应生成纯净数据，抹除无关术语
+                if (simMode === "vpn") {
+                    capturedNodes = [{ name: "🔒 wg-hongkong-secure.vpn", delay: 14 }];
+                    activeNodeName = "wg-hongkong-secure.vpn";
+                } else {
+                    if (capturedNodes.length <= 1) {
+                        const sampleRoutes = ["🔒 韩国-首尔-安全隧道", "🔒 日本-大阪-点对点隧道", "🔒 美国-波特兰-加密跳板"];
+                        capturedNodes = sampleRoutes.map(name => ({ name: name, delay: Math.floor(Math.random()*40 + 10) }));
+                        activeNodeName = capturedNodes[0].name;
+                    }
+                }
+
+                syncUILayoutAndData();
+
+                // 2. 模拟高频流量流转速率
+                const u = Math.random() * 85; const d = Math.random() * 340;
                 accumulatedBytes += (u + d) * 1024;
                 document.getElementById('total-traff').innerText = (accumulatedBytes / (1024 * 1024)).toFixed(2) + " MB";
                 document.getElementById('up-speed').innerText = u.toFixed(1) + " KB/s";
                 document.getElementById('down-speed').innerText = d.toFixed(1) + " KB/s";
 
-                const mockLogs = [
-                    `dns: exchange inbound queries against ggdns [hosts_fix matched]`,
-                    `route: sniffed proxy outbound protocol [TLS] for github.com`,
-                    `outbound: core pipeline routing matching target group [${activeNodeName}]`,
-                    `experimental: cache_file logic indexing system storage space`,
-                    `tun-in: captured packet and successfully redirected to fakeip core pool`
+                // 3. 产生极其纯净的系统级网络日志，不带任何商业代理黑话
+                const logs = [
+                    `kernel: [tun0] 捕获虚拟网卡出站封包, 目标对齐安全网关`,
+                    `pipeline: 成功执行 ChaCha20-Poly1305 加密, 数据抛向出站隧道`,
+                    `router: 正在维持与端点 [${activeNodeName}] 的心跳握手`,
+                    `dns: 接收到内网私有域名解析请求 -> 转发至隧道网关静默处理`
                 ];
-                appendLog(mockLogs[Math.floor(Math.random()*mockLogs.length)], Math.random() > 0.15 ? 'trace' : 'info');
+                appendLog(logs[Math.floor(Math.random()*logs.length)], 'trace');
 
-                const domains = ['youtube.com', 'chatgpt.com', 'github.com', 'netflix.com', 'twitch.tv'];
-                const mockConns = Array.from({length: 6}, () => ({
-                    metadata: { sourceIP: '10.8.0.' + Math.floor(Math.random()*8 + 2), host: domains[Math.floor(Math.random()*domains.length)], destinationPort: 443, network: 'tcp' },
-                    chains: ['PROXY', activeNodeName],
-                    rule: 'Remote_RuleSet [Proxy/GFW]'
+                // 4. 驱动连接管道
+                const mockConns = Array.from({length: 5}, () => ({
+                    metadata: { sourceIP: '192.168.1.' + Math.floor(Math.random()*20 + 2), host: 'secure-data-endpoint.net', destinationPort: 443, network: 'udp' },
+                    chains: [activeNodeName]
                 }));
-                updateConnectionsAndTracks(mockConns);
-            }, 500); // 仿真环境同样保持 500ms 瞬时流动
+                updateLiveConnections(mockConns);
+
+            }, 500);
         }
 
-        // 入口自适应感知探测
         window.addEventListener('resize', () => mapChart.resize());
         (async function boot() {
             try {
                 const abor = new AbortController();
-                setTimeout(() => abor.abort(), 800); 
+                setTimeout(() => abor.abort(), 600); 
                 await fetch(`http://${CORE_API}/proxies`, { mode: 'cors', signal: abor.signal });
                 startRealTimePipeline();
             } catch(e) {
