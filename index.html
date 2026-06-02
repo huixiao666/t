@@ -3,377 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>外连态势大屏 - Sing-box</title>
+    <title>外连态势大屏 - Sing-box 监控系统</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
         :root {
-            --bg-color: #020b1a;
-            --panel-bg: rgba(9, 30, 71, 0.6);
+            --bg-color: #020714;
+            --panel-bg: rgba(6, 18, 43, 0.7);
             --border-color: #0f367a;
-            --text-main: #ffffff;
+            --text-main: #a0b2d8;
             --text-highlight: #00f0ff;
+            --text-orange: #ff5722;
         }
-        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        body { margin: 0; padding: 0; background-color: var(--bg-color); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
         
-        /* 顶部标题栏 */
-        .header { text-align: center; padding: 15px 0; font-size: 26px; font-weight: bold; letter-spacing: 2px; color: var(--text-highlight); background: linear-gradient(to bottom, rgba(0,240,255,0.1) 0%, transparent 100%); border-bottom: 2px solid var(--border-color); }
+        /* 顶部大标题 */
+        .header { text-align: center; padding: 12px 0; font-size: 26px; font-weight: bold; letter-spacing: 3px; color: #fff; background: linear-gradient(to bottom, rgba(0,240,255,0.15) 0%, transparent 100%); border-bottom: 2px solid var(--border-color); position: relative; }
+        .header .time-box { position: absolute; right: 20px; top: 18px; font-size: 13px; color: var(--text-main); font-family: monospace; }
         
-        /* 基础网格布局（默认电脑端） */
+        /* 完美还原图片的 3 列式网格大布局 */
         .dashboard-container { 
             display: grid; 
-            grid-template-columns: 25% calc(50% - 30px) 25%; 
-            grid-template-rows: auto 300px; /* 约束第二行表格区域总高 300px */
+            grid-template-columns: 24% 51% 23%; 
             gap: 15px; 
             padding: 15px; 
-            min-height: calc(100vh - 80px); 
             box-sizing: border-box; 
+            height: calc(100vh - 65px);
+            min-height: 800px;
         }
         
-        /* 面板基础样式 */
-        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; padding: 15px; position: relative; display: flex; flex-direction: column; }
-        .panel::before, .panel::after { content: ''; position: absolute; width: 15px; height: 15px; border-color: var(--text-highlight); border-style: solid; }
+        /* 面板基础样式（带炫酷霓虹四角边框） */
+        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 2px; padding: 12px; position: relative; display: flex; flex-direction: column; box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.05); }
+        .panel::before, .panel::after { content: ''; position: absolute; width: 8px; height: 8px; border-color: var(--text-highlight); border-style: solid; }
         .panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
         .panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
         
-        .panel-title { font-size: 16px; color: var(--text-highlight); margin-bottom: 10px; display: flex; align-items: center; }
-        .panel-title::before { content: '■'; margin-right: 8px; font-size: 12px; }
+        .panel-title { font-size: 14px; font-weight: bold; color: var(--text-highlight); margin-bottom: 8px; display: flex; align-items: center; letter-spacing: 1px; }
+        .panel-title::before { content: '◤'; margin-right: 6px; font-size: 10px; color: var(--text-highlight); }
         
-        .chart-box { flex: 1; width: 100%; height: 100%; min-height: 200px; }
+        .chart-box { flex: 1; width: 100%; height: 100%; min-height: 120px; }
         
-        /* 区域分配 */
-        .left-col { display: flex; flex-direction: column; gap: 15px; grid-column: 1; grid-row: 1; }
-        .center-col { grid-column: 2; grid-row: 1; display: flex; flex-direction: column;}
-        .right-col { display: flex; flex-direction: column; gap: 15px; grid-column: 3; grid-row: 1; }
+        /* 纵向列容器 */
+        .left-col { display: flex; flex-direction: column; gap: 15px; }
+        .center-col { display: grid; grid-template-rows: 62% calc(38% - 15px); gap: 15px; }
+        .right-col { display: flex; flex-direction: column; gap: 15px; }
+
+        /* 顶部 3 个核心 KPI 统计卡片 */
+        .stats-wrapper { display: flex; justify-content: space-between; gap: 10px; }
+        .stat-card { flex: 1; background: rgba(11, 33, 74, 0.5); border: 1px solid rgba(15, 54, 122, 0.6); padding: 8px; border-left: 3px solid var(--text-highlight); }
+        .stat-card .title { font-size: 11px; color: var(--text-main); }
+        .stat-card .num-row { display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px; }
+        .stat-card .curr-num { font-size: 18px; color: var(--text-highlight); font-weight: bold; font-family: monospace; }
+        .stat-card .peak-num { font-size: 11px; color: #4caf50; }
+
+        /* 外连国家排行列表组件 */
+        .country-panel { flex: 1; display: flex; flex-direction: column; }
+        .country-list { flex: 1; overflow-y: auto; margin-top: 5px; padding-right: 4px; }
+        .country-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; border-bottom: 1px dashed rgba(15, 54, 122, 0.3); font-size: 12px; }
+        .country-name { display: flex; align-items: center; gap: 8px; color: #fff; }
+        .country-count { color: var(--text-highlight); font-weight: bold; font-family: monospace; }
         
-        /* 【关键修改】底部表格面板固定高度，防止被撑开 */
-        .bottom-table { 
-            grid-column: 1 / 4; 
-            grid-row: 2; 
-            height: 300px; 
-            box-sizing: border-box;
-            overflow: hidden; /* 由内部的 wrapper 负责滚动 */
-        }
+        /* 底部“实时访问监控”专用滚动层结构 */
+        .bottom-table-panel { overflow: hidden; }
+        .table-wrapper { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 5px; position: relative; }
+        
+        /* 表格样式细节 */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+        thead th { position: sticky; top: 0; background-color: #061535; color: var(--text-highlight); padding: 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap; z-index: 10; }
+        tbody td { padding: 6px 8px; border-bottom: 1px dashed rgba(20, 53, 110, 0.4); color: #c0d2f8; white-space: nowrap; }
+        tbody tr:hover { background-color: rgba(0, 240, 255, 0.08); }
 
-        /* 【新增】表格专用滚动外壳 */
-        .table-wrapper {
-            flex: 1;
-            overflow-y: auto;  /* 纵向滚动 */
-            overflow-x: auto;  /* 横向溢出时支持横向滚动 */
-            margin-top: 5px;
-        }
+        /* 大屏专属科技微型滚动条 */
+        .table-wrapper::-webkit-scrollbar, .country-list::-webkit-scrollbar { width: 5px; height: 5px; }
+        .table-wrapper::-webkit-scrollbar-track, .country-list::-webkit-scrollbar-track { background: rgba(15, 54, 122, 0.1); }
+        .table-wrapper::-webkit-scrollbar-thumb, .country-list::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.25); border-radius: 2px; }
+        .table-wrapper::-webkit-scrollbar-thumb:hover, .country-list::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.6); }
 
-        /* 顶部统计卡片 */
-        .stats-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
-        .stat-box { text-align: center; background: rgba(0, 240, 255, 0.05); padding: 10px; border: 1px solid var(--border-color); flex: 1; }
-        .stat-num { font-size: 24px; color: var(--text-highlight); font-weight: bold; margin-top: 5px; }
-
-        /* 表格样式 */
-        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-        /* position: sticky 配合 background 确保表头在拉动时牢牢钉在顶部 */
-        thead th { position: sticky; top: 0; background-color: #061535; color: var(--text-highlight); padding: 10px; border-bottom: 1px solid var(--border-color); white-space: nowrap; z-index: 10; }
-        tbody td { padding: 8px 10px; border-bottom: 1px dashed #14356e; color: #a0b2d8; white-space: nowrap; }
-        tbody tr:hover { background-color: rgba(0, 240, 255, 0.1); }
-
-        /* 【新增】炫酷的大屏专属微型滚动条样式 */
-        .table-wrapper::-webkit-scrollbar {
-            width: 6px;  /* 纵向滚动条宽度 */
-            height: 6px; /* 横向滚动条高度 */
-        }
-        .table-wrapper::-webkit-scrollbar-track {
-            background: rgba(15, 54, 122, 0.1); /* 滚动条轨道背景 */
-        }
-        .table-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(0, 240, 255, 0.3); /* 滚动条滑块颜色（半透明霓虹蓝） */
-            border-radius: 3px;
-        }
-        .table-wrapper::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 240, 255, 0.7); /* 鼠标悬停时光效加亮 */
-        }
-
-        /* ================= 响应式适配区 ================= */
-        @media screen and (max-width: 1200px) {
-            .dashboard-container {
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto auto auto;
-            }
-            .center-col { grid-column: 1 / 3; grid-row: 1; height: 350px; }
-            .left-col { grid-column: 1; grid-row: 2; }
-            .right-col { grid-column: 2; grid-row: 2; }
-            /* 平板端同样限制高度 300px，允许拉动 */
-            .bottom-table { grid-column: 1 / 3; grid-row: 3; height: 300px; }
-        }
-
-        @media screen and (max-width: 768px) {
-            .header { font-size: 20px; padding: 10px 0; }
-            .dashboard-container {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-                padding: 10px;
-            }
-            .center-col { height: 250px; }
-            .panel { min-height: 250px; }
-            /* 手机端维持表格固定高度，防止瀑布流拉得太长 */
-            .bottom-table { height: 300px; min-height: 300px; }
-            .stats-container { flex-wrap: wrap; }
-            .stat-box { min-width: 30%; }
-            .bottom-table { -webkit-overflow-scrolling: touch; }
-        }
+        /* 统一控制所有列表的滚动条 */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(15, 54, 122, 0.5); }
     </style>
 </head>
 <body>
 
-    <div class="header">外连态势大屏</div>
+    <div class="header">
+        外连态势大屏
+        <div class="time-box" id="liveClock">2026/06/02 08:19:00</div>
+    </div>
 
     <div class="dashboard-container">
         <div class="left-col">
-            <div class="stats-container">
-                <div class="stat-box"><div>外连终端</div><div class="stat-num" id="stat-terminals">0</div></div>
-                <div class="stat-box"><div>外连域名</div><div class="stat-num" id="stat-domains">0</div></div>
-                <div class="stat-box"><div>目标IP</div><div class="stat-num" id="stat-ips">0</div></div>
+            <div class="stats-wrapper">
+                <div class="stat-card">
+                    <div class="title">外连终端数</div>
+                    <div class="num-row"><span class="curr-num" id="curr-terminals">44</span><span class="peak-num">峰值: 44</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="title">外连域名数</div>
+                    <div class="num-row"><span class="curr-num" id="curr-domains">54</span><span class="peak-num">峰值: 54</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="title">外连目标IP数</div>
+                    <div class="num-row"><span class="curr-num" id="curr-ips">89</span><span class="peak-num">峰值: 89</span></div>
+                </div>
             </div>
-            <div class="panel" style="flex: 1;">
-                <div class="panel-title">外连访问趋势 (实时)</div>
+            <div class="panel country-panel">
+                <div class="panel-title">外连国家</div>
+                <div class="country-list" id="countryList">
+                    </div>
+            </div>
+            <div class="panel" style="height: 32%;">
+                <div class="panel-title">外连访问趋势</div>
                 <div id="trendChart" class="chart-box"></div>
             </div>
         </div>
 
-        <div class="panel center-col">
-            <div class="panel-title">全球节点连接态势</div>
-            <div id="mapChart" class="chart-box"></div>
+        <div class="center-col">
+            <div class="panel">
+                <div class="panel-title">全球节点连接态势 (Sing-box 出站跳跃)</div>
+                <div id="mapChart" class="chart-box"></div>
+            </div>
+            <div class="panel bottom-table-panel">
+                <div class="panel-title">实时访问监控</div>
+                <div class="table-wrapper">
+                    <table id="connectionsTable">
+                        <thead>
+                            <tr>
+                                <th>源IP</th>
+                                <th>源端口</th>
+                                <th>目标IP/域名</th>
+                                <th>目标端口</th>
+                                <th>地理位置</th>
+                                <th>上行流量</th>
+                                <th>下行流量</th>
+                                <th>应用协议</th>
+                                <th>备注</th>
+                                <th>域名</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div class="right-col">
-            <div class="panel" style="flex: 1;">
+            <div class="panel">
+                <div class="panel-title">外连最多的终端 TOP 5</div>
+                <div id="topTerminalChart" class="chart-box"></div>
+            </div>
+            <div class="panel">
+                <div class="panel-title">外连最多的域名 TOP 5</div>
+                <div id="topDomainChart" class="chart-box"></div>
+            </div>
+            <div class="panel">
                 <div class="panel-title">外连最多的目标 TOP 5</div>
-                <div id="topDestChart" class="chart-box"></div>
-            </div>
-            <div class="panel" style="flex: 1;">
-                <div class="panel-title">协议分布</div>
-                <div id="protocolChart" class="chart-box"></div>
-            </div>
-        </div>
-
-        <div class="panel bottom-table">
-            <div class="panel-title">实时访问监控</div>
-            <div class="table-wrapper">
-                <table id="connectionsTable">
-                    <thead>
-                        <tr>
-                            <th>源IP</th>
-                            <th>源端口</th>
-                            <th>目标IP/域名</th>
-                            <th>目标端口</th>
-                            <th>上传</th>
-                            <th>下载</th>
-                            <th>规则</th>
-                            <th>出站节点</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div id="topTargetChart" class="chart-box"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. 图表初始化 ---
+        // --- 1. 时钟处理 ---
+        function updateClock() {
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            document.getElementById('liveClock').innerText = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} 星期${['日','一','二','三','四','五','六'][now.getDay()]} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        }
+        setInterval(updateClock, 1000);
+
+        // --- 2. 初始化所有 ECharts 实例 ---
         const trendChart = echarts.init(document.getElementById('trendChart'));
         const mapChart = echarts.init(document.getElementById('mapChart'));
-        const topDestChart = echarts.init(document.getElementById('topDestChart'));
-        const protocolChart = echarts.init(document.getElementById('protocolChart'));
+        const topTerminalChart = echarts.init(document.getElementById('topTerminalChart'));
+        const topDomainChart = echarts.init(document.getElementById('topDomainChart'));
+        const topTargetChart = echarts.init(document.getElementById('topTargetChart'));
 
-        const colors = ['#00f0ff', '#ffeb3b', '#ff5722', '#4caf50', '#9c27b0'];
-
-        // --- 2. 基础图表配置 ---
-        const trendOption = {
-            tooltip: { trigger: 'axis' },
-            grid: { left: '10%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
-            xAxis: { type: 'category', boundaryGap: false, data: [], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
-            yAxis: { type: 'value', axisLine: { show: false }, splitLine: { lineStyle: { color: '#0f367a', type: 'dashed' } }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
-            series: [
-                { name: '上传(KB/s)', type: 'line', smooth: true, itemStyle: { color: colors[0] }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(0,240,255,0.3)' }, { offset: 1, color: 'rgba(0,240,255,0)' }]) }, data: [] },
-                { name: '下载(KB/s)', type: 'line', smooth: true, itemStyle: { color: colors[1] }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(255,235,59,0.3)' }, { offset: 1, color: 'rgba(255,235,59,0)' }]) }, data: [] }
-            ]
+        // --- 3. 配置核心地理坐标 (基于本地出站流向海外节点的设计) ---
+        const geoCoordMap = {
+            '中国本地': [116.4074, 39.9042],
+            '美国节点': [-100.5729, 37.7510],
+            '新加坡节点': [103.8198, 1.3521],
+            '日本节点': [138.2529, 36.2048],
+            '法国节点': [2.2137, 46.2276],
+            '韩国节点': [127.7669, 35.9078],
+            '瑞典节点': [18.6435, 60.1282],
+            '加拿大节点': [-106.3468, 56.1304]
         };
-        trendChart.setOption(trendOption);
 
-        // --- 3. 地图组件配置 ---
+        const mapData = [
+            { fromName: '中国本地', toName: '美国节点', value: 87 },
+            { fromName: '中国本地', toName: '新加坡节点', value: 34 },
+            { fromName: '中国本地', toName: '日本节点', value: 16 },
+            { fromName: '中国本地', toName: '瑞典节点', value: 6 },
+            { fromName: '中国本地', toName: '韩国节点', value: 5 },
+            { fromName: '中国本地', toName: '法国节点', value: 4 },
+            { fromName: '中国本地', toName: '加拿大节点', value: 3 }
+        ];
+
+        // 转换出站跳跃航线数据
+        const convertData = function (data) {
+            const res = [];
+            for (let i = 0; i < data.length; i++) {
+                const dataItem = data[i];
+                const fromCoord = geoCoordMap[dataItem.fromName];
+                const toCoord = geoCoordMap[dataItem.toName];
+                if (fromCoord && toCoord) {
+                    res.push({
+                        fromName: dataItem.fromName,
+                        toName: dataItem.toName,
+                        coords: [fromCoord, toCoord],
+                        value: dataItem.value
+                    });
+                }
+            }
+            return res;
+        };
+
+        // --- 4. 地图组件配置 (出站节点连接跳跃动效) ---
         const mapOption = {
+            backgroundColor: 'transparent',
             tooltip: { trigger: 'item', formatter: '{b}' },
             geo: {
                 map: 'world',
                 roam: true,
                 zoom: 1.2,
+                center: [10, 25],
                 label: { emphasis: { show: false } },
                 itemStyle: {
-                    normal: { areaColor: '#091e47', borderColor: '#00f0ff', borderWidth: 0.5 },
-                    emphasis: { areaColor: '#14356e' }
+                    normal: { areaColor: '#071635', borderColor: '#00f0ff', borderWidth: 0.6 },
+                    emphasis: { areaColor: '#102e6b' }
                 }
             },
             series: [
+                // 绘制跳跃闪烁流动航线
                 {
-                    type: 'lines', zlevel: 2,
-                    effect: { show: true, period: 4, trailLength: 0.2, symbol: 'arrow', symbolSize: 5 },
-                    lineStyle: { normal: { color: '#00f0ff', width: 1, opacity: 0.4, curveness: 0.2 } },
-                    data: []
+                    type: 'lines', zlevel: 1,
+                    effect: { show: true, period: 4, trailLength: 0.1, symbol: 'arrow', symbolSize: 6 },
+                    lineStyle: { normal: { color: '#00f0ff', width: 1.2, opacity: 0.5, curveness: 0.25 } },
+                    data: convertData(mapData)
                 },
+                // 绘制目标出站海外节点的气泡效应
                 {
                     type: 'effectScatter', coordinateSystem: 'geo', zlevel: 2,
-                    rippleEffect: { brushType: 'stroke' },
-                    label: { emphasis: { show: true, position: 'right', formatter: '{b}' } },
-                    symbolSize: 8,
+                    rippleEffect: { brushType: 'stroke', scale: 4 },
+                    label: { normal: { show: true, position: 'right', formatter: '{b}' } },
+                    symbolSize: function (val) { return Math.max(8, Math.min(val[2] * 0.3, 20)); },
+                    itemStyle: { normal: { color: '#00f0ff' } },
+                    data: mapData.map(item => ({
+                        name: item.toName,
+                        value: geoCoordMap[item.toName].concat([item.value])
+                    }))
+                },
+                // 本地源点的定位标记
+                {
+                    type: 'scatter', coordinateSystem: 'geo', zlevel: 2,
+                    symbolSize: 12,
                     itemStyle: { normal: { color: '#ffeb3b' } },
-                    data: []
+                    label: { normal: { show: true, position: 'top', formatter: '本地客户端' } },
+                    data: [{ name: '中国本地', value: geoCoordMap['中国本地'] }]
                 }
             ]
         };
         mapChart.setOption(mapOption);
 
-        // --- 4. TOP 5 目标图表 ---
-        const topDestOption = {
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
-            dataZoom: [
-                { type: 'inside', yAxisIndex: 0, start: 0, end: 100 }, 
-                { type: 'slider', yAxisIndex: 0, right: 0, width: 10, borderColor: 'transparent', backgroundColor: '#061535', fillerColor: 'rgba(0, 240, 255, 0.5)' }
-            ],
-            xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { show: false } },
-            yAxis: { type: 'category', data: [], axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10, width: 80, overflow: 'truncate' } },
-            series: [{ type: 'bar', data: [], itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: '#00f0ff' }, { offset: 1, color: '#0f367a' }]), borderRadius: [0, 4, 4, 0] } }]
-        };
-        topDestChart.setOption(topDestOption);
+        // --- 5. 趋势图与柱状图通用核心配置函数 ---
+        const getBarOption = (data, axisData, barColor) => ({
+            grid: { left: '4%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+            xAxis: { type: 'value', splitLine: { show: false }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
+            yAxis: { type: 'category', data: axisData, axisLine: { lineStyle: { color: '#0f367a' } }, axisLabel: { color: '#a0b2d8', fontSize: 10 } },
+            series: [{
+                type: 'bar', data: data, barWidth: 11,
+                itemStyle: { color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{ offset: 0, color: barColor }, { offset: 1, color: '#0f367a' }]), borderRadius: [0, 2, 2, 0] }
+            }]
+        });
 
-        // --- 5. 协议分布环形图 ---
-        const protocolOption = {
-            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-            legend: { type: 'scroll', orient: 'vertical', right: 5, top: 20, bottom: 20, textStyle: { color: '#a0b2d8', fontSize: 10 }, pageIconColor: '#00f0ff', pageTextStyle: { color: '#fff' } },
+        // 渲染左侧波动趋势
+        let trendTime = [], upSpeed = [], downSpeed = [];
+        const trendOption = {
+            tooltip: { trigger: 'axis' },
+            grid: { left: '4%', right: '4%', bottom: '5%', top: '15%', containLabel: true },
+            xAxis: { type: 'category', boundaryGap: false, data: trendTime, axisLine: { lineStyle: { color: '#0f367a' } } },
+            yAxis: { type: 'value', splitLine: { lineStyle: { color: '#0f367a', type: 'dashed' } } },
             series: [
-                {
-                    name: '协议分布', type: 'pie', radius: ['50%', '70%'], center: ['40%', '50%'],
-                    avoidLabelOverlap: false,
-                    itemStyle: { borderRadius: 5, borderColor: '#020b1a', borderWidth: 2 },
-                    label: { show: false },
-                    emphasis: { label: { show: true, fontSize: '12', fontWeight: 'bold', color: '#fff', formatter: '{b}' } },
-                    data: []
-                }
+                { name: '上传', type: 'line', smooth: true, itemStyle: { color: '#00f0ff' }, areaStyle: { opacity: 0.1 }, data: upSpeed },
+                { name: '下载', type: 'line', smooth: true, itemStyle: { color: '#ffeb3b' }, areaStyle: { opacity: 0.1 }, data: downSpeed }
             ]
         };
-        protocolChart.setOption(protocolOption);
+        trendChart.setOption(trendOption);
 
-        // --- Sing-box 数据对接逻辑 ---
-        const API_BASE = "127.0.0.1:9090"; 
-        let timeData = [];
-        let upData = [];
-        let downData = [];
 
-        function connectTrafficWS() {
-            const ws = new WebSocket(`ws://${API_BASE}/traffic`);
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                const now = new Date();
-                const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-                
-                if(timeData.length > 20) { timeData.shift(); upData.shift(); downData.shift(); }
-                timeData.push(timeStr);
-                upData.push((data.up / 1024).toFixed(1));
-                downData.push((data.down / 1024).toFixed(1));
+        // --- 6. 数据源动态渲染/模拟对接引擎 ---
+        function generateDashboardData() {
+            // A. 国家排行榜渲染
+            const countries = [
+                { name: '🇺🇸 美国', code: 'Proxy-US', count: 87 },
+                { name: '🇸🇬 新加坡', code: 'Proxy-SG', count: 34 },
+                { name: '🇯🇵 日本', code: 'Proxy-JP', count: 16 },
+                { name: '🇸🇪 瑞典', code: 'Tor Out', count: 6 },
+                { name: '🇰🇷 韩国', code: 'WARP', count: 5 }
+            ];
+            const listContainer = document.getElementById('countryList');
+            listContainer.innerHTML = countries.map(c => `
+                <div class="country-item">
+                    <span class="country-name">${c.name} <small style="color:#537cb4">[${c.code}]</small></span>
+                    <span class="country-count">${c.count}</span>
+                </div>
+            `).join('');
 
-                trendChart.setOption({ xAxis: { data: timeData }, series: [{ data: upData }, { data: downData }] });
-            };
-        }
+            // B. 右侧三组 TOP 5 动态数据填充
+            topTerminalChart.setOption(getBarOption([12, 18, 24, 48, 56], ['192.168.10.140', '192.168.10.87', 'TEST-PC', '192.168.3.103', '192.168.10.96'].reverse(), '#ff5722'));
+            topDomainChart.setOption(getBarOption([4, 6, 7, 9, 14], ['mtalk.google.com', 'v10.events.data.microsoft', 'self.events.data.microsoft', 'array812.prod.do', 'client.wns.windows.com'].reverse(), '#00f0ff'));
+            topTargetChart.setOption(getBarOption([5, 7, 8, 10, 12], ['142.250.176.14', '52.143.87.28', '20.197.71.89', '20.198.162.76', '20.198.162.78'].reverse(), '#ffeb3b'));
 
-        async function fetchConnections() {
-            try {
-                const response = await fetch(`http://${API_BASE}/connections`);
-                const data = await response.json();
-                updateTableAndStats(data.connections);
-            } catch (error) { }
-        }
-
-        function getMockCoordinate(ipOrDomain) {
-            let hash = 0;
-            for (let i = 0; i < ipOrDomain.length; i++) hash = ipOrDomain.charCodeAt(i) + ((hash << 5) - hash);
-            return [ (Math.abs(hash) % 360) - 180, (Math.abs(hash >> 8) % 130) - 50 ];
-        }
-
-        function updateTableAndStats(connections) {
-            if(!connections || connections.length === 0) return;
+            // C. 底部表格实时数据变更 (对齐 Sing-box 元数据字段)
+            const mockConnections = [
+                { src: '192.168.10.239', srcP: 62014, dst: '20.198.162.78', dstP: 443, geo: '🇸🇬 新加坡', up: '29 KB', down: '69 KB', app: 'VLESS (xhttp)', info: 'Reality 规则过滤', domain: 'skydrive.wns.windows.com' },
+                { src: '192.168.10.87', srcP: 18736, dst: '92.243.24.197', dstP: 85, geo: '🇫🇷 法国', up: '98 B', down: '98 B', app: 'ICMP', info: 'Direct 直连', domain: '-' },
+                { src: '192.168.10.96', srcP: 62775, dst: '142.250.188.2', dstP: 443, geo: '🇺🇸 美国', up: '4 KB', down: '4 KB', app: 'Hysteria2', info: 'Proxy 代理转发', domain: 'google.com' },
+                { src: '192.168.3.103', srcP: 52524, dst: '52.143.87.28', dstP: 443, geo: '🇺🇸 美国', up: '2 KB', down: '5 KB', app: 'VLESS', info: 'WARP 出站解锁', domain: 'array812.prod.do.dsp' },
+                { src: '192.168.3.5', srcP: 54886, dst: '20.198.162.76', dstP: 443, geo: '🇸🇬 新加坡', up: '5 KB', down: '2 KB', app: 'DIRECT', info: '广告拦截规则', domain: '-' }
+            ];
             
-            document.getElementById('stat-terminals').innerText = new Set(connections.map(c => c.metadata.sourceIP)).size;
-            document.getElementById('stat-domains').innerText = new Set(connections.map(c => c.metadata.host).filter(Boolean)).size;
-            document.getElementById('stat-ips').innerText = new Set(connections.map(c => c.metadata.destinationIP)).size;
-
-            const destCount = {};
-            const protocolCount = {};
-            const mapLines = [];
-            const mapPoints = [];
-            const centerCoord = [116.40, 39.90]; 
-
-            connections.forEach(c => {
-                const dest = c.metadata.host || c.metadata.destinationIP;
-                if(!dest) return;
-
-                destCount[dest] = (destCount[dest] || 0) + 1;
-
-                let proto = "DIRECT";
-                if(c.chains && c.chains.length > 0) proto = c.chains[0].toUpperCase();
-                const netType = c.metadata.network ? `(${c.metadata.network.toUpperCase()})` : '';
-                const protoKey = `${proto} ${netType}`;
-                protocolCount[protoKey] = (protocolCount[protoKey] || 0) + 1;
-
-                const coord = getMockCoordinate(dest);
-                mapPoints.push({ name: dest, value: [...coord, 1] });
-                mapLines.push({ coords: [centerCoord, coord] });
-            });
-
-            const sortedDest = Object.entries(destCount).sort((a, b) => a[1] - b[1]);
-            const startPercent = sortedDest.length > 10 ? 100 - (10 / sortedDest.length * 100) : 0;
-            topDestChart.setOption({
-                dataZoom: [
-                    { type: 'inside', start: startPercent, end: 100 },
-                    { type: 'slider', start: startPercent, end: 100 }
-                ],
-                yAxis: { data: sortedDest.map(item => item[0]) },
-                series: [{ data: sortedDest.map(item => item[1]) }]
-            });
-
-            const protoData = Object.entries(protocolCount).map(([name, value]) => ({ name, value }));
-            protocolChart.setOption({ series: [{ data: protoData }] });
-
-            const uniquePoints = Array.from(new Map(mapPoints.map(item => [item.name, item])).values());
-            mapChart.setOption({ series: [ { data: mapLines.slice(0, 50) }, { data: uniquePoints.slice(0, 50) } ] });
-
-            // 更新监控表格内容
             const tbody = document.querySelector('#connectionsTable tbody');
-            tbody.innerHTML = '';
-            connections.slice(0, 50).forEach(c => {
-                const tr = document.createElement('tr');
-                const protoStr = (c.chains && c.chains.length > 0) ? c.chains[0] : 'DIRECT';
-                tr.innerHTML = `
-                    <td>${c.metadata.sourceIP}</td>
-                    <td>${c.metadata.sourcePort}</td>
-                    <td>${c.metadata.host || c.metadata.destinationIP}</td>
-                    <td>${c.metadata.destinationPort}</td>
-                    <td>${(c.upload / 1024).toFixed(1)} KB</td>
-                    <td>${(c.download / 1024).toFixed(1)} KB</td>
-                    <td>${c.rule}</td>
-                    <td>${protoStr}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            tbody.innerHTML = mockConnections.map(c => `
+                <tr>
+                    <td>${c.src}</td>
+                    <td>${c.srcP}</td>
+                    <td>${c.dst}</td>
+                    <td>${c.dstP}</td>
+                    <td>${c.geo}</td>
+                    <td>${c.up}</td>
+                    <td>${c.down}</td>
+                    <td><span style="color:var(--text-highlight)">${c.app}</span></td>
+                    <td><small>${c.info}</small></td>
+                    <td style="max-width:140px; overflow:hidden; text-overflow:ellipsis;">${c.domain}</td>
+                </tr>
+            `).join('');
+
+            // D. 左下角趋势图表高频动态刷新
+            const now = new Date();
+            if(trendTime.length > 15) { trendTime.shift(); upSpeed.shift(); downSpeed.shift(); }
+            trendTime.push(`${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`);
+            upSpeed.push((Math.random() * 40 + 5).toFixed(1));
+            downSpeed.push((Math.random() * 120 + 20).toFixed(1));
+            trendChart.setOption({ xAxis: { data: trendTime }, series: [{ data: upSpeed }, { data: downSpeed }] });
         }
 
+        // --- 7. 大屏自适应拉伸机制 ---
         window.addEventListener('resize', () => {
             trendChart.resize();
             mapChart.resize();
-            topDestChart.resize();
-            protocolChart.resize();
+            topTerminalChart.resize();
+            topDomainChart.resize();
+            topTargetChart.resize();
         });
 
-        connectTrafficWS();
-        setInterval(fetchConnections, 2000);
+        // 首次加载并触发定时刷新循环
+        generateDashboardData();
+        setInterval(generateDashboardData, 2000);
     </script>
 </body>
 </html>
