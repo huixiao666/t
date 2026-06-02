@@ -3,63 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SING-BOX 内核态势 v6.1 完整矩阵版</title>
+    <title>SING-BOX 内核态势感知 v7.0 (稳健版)</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
-        :root { --bg: #010306; --panel: rgba(5, 10, 20, 0.9); --cyan: #00e5ff; --border: #0a1e3d; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: monospace; }
+        body, html { margin: 0; padding: 0; background: #010306; color: #fff; font-family: monospace; height: 100%; overflow-x: hidden; }
         
-        /* 1. 地图全屏顶置 */
-        #top-map { width: 100vw; height: 45vh; border-bottom: 2px solid var(--cyan); background: #000; }
+        /* 1. 地图层：占满顶部 */
+        #map-top { width: 100%; height: 40vh; min-height: 200px; border-bottom: 2px solid #00e5ff; }
         
-        /* 2. 响应式网格布局 */
-        .dashboard { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; 
-            padding: 8px; 
+        /* 2. 主容器：使用 Flex 布局解决 Grid 崩溃风险 */
+        .container { display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; }
+        
+        /* 3. 面板逻辑 */
+        .panel { 
+            flex: 1 1 calc(25% - 20px); /* 桌面端每行4个 */
+            min-width: 250px; 
+            background: rgba(5, 12, 25, 0.9); 
+            border: 1px solid #0a1e3d; 
+            padding: 10px; 
+            box-sizing: border-box; 
         }
         
-        /* 桌面端大屏幕显示 4 列；移动端自适应坍缩 */
-        @media (max-width: 1024px) { .dashboard { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .dashboard { grid-template-columns: 1fr; } }
-
-        .panel { background: var(--panel); border: 1px solid var(--border); padding: 8px; min-height: 120px; }
-        .panel-title { color: var(--cyan); font-size: 11px; margin-bottom: 6px; border-bottom: 1px solid var(--border); }
-        .item { font-size: 10px; color: #a0b0c0; padding: 2px 0; }
+        /* 移动端优化 */
+        @media (max-width: 800px) { .panel { flex: 1 1 100%; } }
+        
+        .title { color: #00e5ff; font-size: 12px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #0a1e3d; padding-bottom: 4px; }
+        .data { font-size: 11px; color: #8899aa; }
     </style>
 </head>
 <body>
 
-    <div id="top-map"></div>
+    <div id="map-top"></div>
 
-    <div class="dashboard">
-        <div class="panel"> <div class="panel-title">01 流量吞吐</div> <div class="item">Up: 0B/s | Down: 0B/s</div> </div>
-        <div class="panel"> <div class="panel-title">02 入站嗅探</div> <div class="item">TLS SNI: Active</div> </div>
-        <div class="panel"> <div class="panel-title">03 DNS 链式解析</div> <div class="item">Remote: 45ms</div> </div>
-        <div class="panel"> <div class="panel-title">04 缓存状态</div> <div class="item">Cache Hit: 92%</div> </div>
-        
-        <div class="panel"> <div class="panel-title">05 日志终端</div> <div class="item">INFO: Starting...</div> </div>
-        <div class="panel"> <div class="panel-title">06 L4 传输审计</div> <div class="item">TCP: 12 | UDP: 2</div> </div>
-        <div class="panel"> <div class="panel-title">07 会话管道</div> <div class="item">Active Conns: 14</div> </div>
-        <div class="panel"> <div class="panel-title">08 策略分流矩阵</div> <div class="item">Proxy: Select</div> </div>
-        
-        <div class="panel"> <div class="panel-title">09 SRS 规则链</div> <div class="item">Geo-CN: Loaded</div> </div>
-        <div class="panel"> <div class="panel-title">10 路由热度</div> <div class="item">Direct: High</div> </div>
-        <div class="panel"> <div class="panel-title">11 Go 运行时</div> <div class="item">Mem: 32MB</div> </div>
-        <div class="panel"> <div class="panel-title">12 地理分布</div> <div class="item">Nodes: 5</div> </div>
+    <div class="container" id="main-container">
+        </div>
 
-        <div class="panel"> <div class="panel-title">13 NTP 时间对齐</div> <div class="item">Offset: 0.001ms</div> </div>
-        <div class="panel"> <div class="panel-title">14 进程/包名墙</div> <div class="item">PID: 4821</div> </div>
-        <div class="panel"> <div class="panel-title">15 CacheFileDB</div> <div class="item">Store: Enabled</div> </div>
-        <div class="panel"> <div class="panel-title">16 MUX 复用</div> <div class="item">Streams: 4/8</div> </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script>
-        const chart = echarts.init(document.getElementById('top-map'));
-        chart.setOption({
-            geo: { map: 'world', roam: true, itemStyle: { areaColor: '#020510', borderColor: '#081e42' } }
+        // 初始化地图
+        const map = echarts.init(document.getElementById('map-top'));
+        map.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#020510' } } });
+
+        // 模块定义
+        const modules = [
+            "01 流量吞吐", "02 入站探测", "03 DNS 解析", "04 缓存状态",
+            "05 日志终端", "06 L4 传输", "07 会话审计", "08 策略矩阵",
+            "09 SRS 规则", "10 路由热度", "11 内存开销", "12 全球流向",
+            "13 NTP 同步", "14 进程劫持", "15 CacheDB", "16 MUX 复用"
+        ];
+
+        // 渲染模块
+        const container = document.getElementById('main-container');
+        modules.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'panel';
+            div.innerHTML = `<div class="title">${m}</div><div class="data">连接中...</div>`;
+            container.appendChild(div);
         });
+
+        // 适配 Resize
+        window.onresize = () => { map.resize(); };
     </script>
 </body>
 </html>
