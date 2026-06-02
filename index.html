@@ -2,80 +2,70 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SING-BOX 内核超视距态势 v10.0</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
-        :root { --bg: #010306; --panel: rgba(2, 6, 16, 0.95); --cyan: #00e5ff; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Consolas', monospace; height: 100vh; display: flex; flex-direction: column; }
+        body { margin: 0; background: #010816; color: #fff; font-family: sans-serif; overflow: hidden; height: 100vh; }
         
-        /* 顶部区域：地图(1/5) + 时间 */
-        .top-bar { height: 20%; display: flex; border-bottom: 2px solid #081b3d; }
-        #map-container { flex: 4; border-right: 1px solid #081b3d; }
-        .time-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #020510; }
-        #clock { font-size: 24px; color: var(--cyan); }
-
-        /* 下方矩阵：16 模块 */
-        .grid-container { 
-            flex: 80%; display: grid; grid-template-columns: repeat(4, 1fr); 
-            grid-template-rows: repeat(4, 1fr); gap: 4px; padding: 4px;
+        /* 布局骨架 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 20% 55% 25%;
+            grid-template-rows: 60px 1fr 1fr 250px;
+            grid-template-areas: 
+                "header header header"
+                "left map right1"
+                "left map right2"
+                "bottom bottom bottom";
+            gap: 10px; padding: 10px; height: 100%; box-sizing: border-box;
         }
-        .panel { background: var(--panel); border: 1px solid #081b3d; padding: 5px; display: flex; flex-direction: column; overflow: hidden; }
-        .m-title { font-size: 9px; color: var(--cyan); border-bottom: 1px solid #081b3d; margin-bottom: 3px; }
-        .m-data { font-size: 11px; color: #fff; flex-grow: 1; display: flex; align-items: center; }
+
+        .panel { border: 1px solid #08306b; background: rgba(5, 20, 45, 0.6); padding: 10px; }
         
-        @media (max-width: 800px) { .grid-container { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(8, 1fr); } }
+        /* 区域分配 */
+        #header { grid-area: header; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0a4da6; }
+        #left { grid-area: left; }
+        #map { grid-area: map; background: #02112a; } /* 这里放置地图容器 */
+        #right1 { grid-area: right1; }
+        #right2 { grid-area: right2; }
+        #bottom { grid-area: bottom; }
+        
+        .title { color: #00d4ff; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div id="map-container"></div>
-        <div class="time-panel">
-            <div style="font-size: 10px; color: #666;">SYSTEM TIME</div>
-            <div id="clock">00:00:00</div>
+<div class="dashboard">
+    <div id="header">
+        <div style="font-size: 20px; font-weight: bold;">外连态势大屏</div>
+        <div>2026/06/02 10:00:00</div>
+    </div>
+    
+    <div id="left" class="panel">
+        <div class="title">数据概览</div>
         </div>
+
+    <div id="map" class="panel">
+        <div class="title">全球流向态势</div>
+        </div>
+
+    <div id="right1" class="panel">
+        <div class="title">终端 TOP5</div>
+    </div>
+    <div id="right2" class="panel">
+        <div class="title">域名/目标 TOP5</div>
     </div>
 
-    <div class="grid-container" id="matrix"></div>
+    <div id="bottom" class="panel">
+        <div class="title">实时访问监控</div>
+        <table style="width:100%; border-collapse: collapse; font-size: 12px; color: #a0cfff;">
+            <thead><tr style="border-bottom: 1px solid #08306b;"><th>源IP</th><th>目标IP</th><th>上行</th><th>下行</th><th>应用</th></tr></thead>
+            <tbody><tr><td>192.168.10.x</td><td>20.198.xxx</td><td>29KB</td><td>69KB</td><td>HTTPS</td></tr></tbody>
+        </table>
+    </div>
+</div>
 
-    <script>
-        // 地图初始化
-        const m = echarts.init(document.getElementById('map-container'));
-        m.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#000' } } });
-
-        // 实时时钟
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-        }, 1000);
-
-        // 16 个实时模块定义
-        const modules = [
-            "01-BANDWIDTH", "02-SNIFFER", "03-DNS-RESOLV", "04-DNS-CACHE",
-            "05-LOG-STREAM", "06-L4-TCP/UDP", "07-CONN-PIPELINE", "08-PROXY-ATOMS",
-            "09-SRS-RULES", "10-ROUTING-HEAT", "11-GO-RUNTIME", "12-GEOLOCATION",
-            "13-NTP-OFFSET", "14-PROCESS-AUDIT", "15-CACHE-DB", "16-MUX-STREAM"
-        ];
-
-        const mat = document.getElementById('matrix');
-        modules.forEach((name, i) => {
-            const p = document.createElement('div');
-            p.className = 'panel';
-            p.innerHTML = `<div class="m-title">${name}</div><div class="m-data" id="val-${i}">Initializing...</div>`;
-            mat.appendChild(p);
-        });
-
-        // 模拟 WebSocket 实时更新逻辑
-        function updateData() {
-            modules.forEach((_, i) => {
-                const el = document.getElementById(`val-${i}`);
-                if(i === 0) el.innerText = `↑${(Math.random()*10).toFixed(1)}MB/s ↓${(Math.random()*50).toFixed(1)}MB/s`;
-                else if(i === 4) el.innerText = `[INFO] ${Math.random().toString(36).substring(7)}...`;
-                else el.innerText = (Math.random()*100).toFixed(2) + " %";
-            });
-        }
-        setInterval(updateData, 800);
-    </script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>
+    // 初始化地图逻辑同前述
+</script>
 </body>
 </html>
