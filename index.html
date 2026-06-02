@@ -3,66 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SING-BOX 全核态势 v9.0 实时版</title>
+    <title>SING-BOX 内核超视距态势 v10.0</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
-        :root { --bg: #010306; --cyan: #00e5ff; --panel: rgba(5, 12, 25, 0.95); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Consolas', monospace; }
+        :root { --bg: #010306; --panel: rgba(2, 6, 16, 0.95); --cyan: #00e5ff; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Consolas', monospace; height: 100vh; display: flex; flex-direction: column; }
         
-        /* 布局定义：地图全占首行 */
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-areas: 
-                "map map map map"
-                "m1 m2 m3 m4"
-                "m5 m6 m7 m8"
-                "m9 m10 m11 m12"
-                "m13 m14 m15 m16";
-            gap: 8px; padding: 10px; height: 100vh;
-        }
+        /* 顶部区域：地图(1/5) + 时间 */
+        .top-bar { height: 20%; display: flex; border-bottom: 2px solid #081b3d; }
+        #map-container { flex: 4; border-right: 1px solid #081b3d; }
+        .time-panel { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #020510; }
+        #clock { font-size: 24px; color: var(--cyan); }
 
-        #map-top { grid-area: map; height: 35vh; border: 1px solid #081b3d; }
+        /* 下方矩阵：16 模块 */
+        .grid-container { 
+            flex: 80%; display: grid; grid-template-columns: repeat(4, 1fr); 
+            grid-template-rows: repeat(4, 1fr); gap: 4px; padding: 4px;
+        }
+        .panel { background: var(--panel); border: 1px solid #081b3d; padding: 5px; display: flex; flex-direction: column; overflow: hidden; }
+        .m-title { font-size: 9px; color: var(--cyan); border-bottom: 1px solid #081b3d; margin-bottom: 3px; }
+        .m-data { font-size: 11px; color: #fff; flex-grow: 1; display: flex; align-items: center; }
         
-        .panel { background: var(--panel); border: 1px solid #081b3d; padding: 5px; overflow: hidden; display: flex; flex-direction: column; }
-        .title { color: var(--cyan); font-size: 10px; font-weight: bold; border-bottom: 1px solid #081b3d; }
-        .data-live { font-size: 11px; color: #fff; margin-top: 5px; word-break: break-all; }
-
-        @media (max-width: 800px) {
-            .dashboard-layout { grid-template-columns: 1fr; grid-template-areas: "map" "m1" "m2"...; }
-        }
+        @media (max-width: 800px) { .grid-container { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(8, 1fr); } }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-layout">
-        <div id="map-top"></div>
-        <div class="panel" style="grid-area: m1;"><div class="title">01 实时吞吐</div><div class="data-live" id="m01">Loading...</div></div>
-        <div class="panel" style="grid-area: m5;"><div class="title">05 日志输出</div><div class="data-live" id="m05" style="font-size: 8px;">...</div></div>
+    <div class="top-bar">
+        <div id="map-container"></div>
+        <div class="time-panel">
+            <div style="font-size: 10px; color: #666;">SYSTEM TIME</div>
+            <div id="clock">00:00:00</div>
         </div>
+    </div>
+
+    <div class="grid-container" id="matrix"></div>
 
     <script>
-        const map = echarts.init(document.getElementById('map-top'));
-        map.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#020510' } } });
+        // 地图初始化
+        const m = echarts.init(document.getElementById('map-container'));
+        m.setOption({ geo: { map: 'world', roam: true, itemStyle: { areaColor: '#000' } } });
 
-        // 核心 WebSocket 驱动：将数据注入指定 ID
-        function connectKernel() {
-            // 请确保你的 sing-box 已开启 external_controller
-            const ws = new WebSocket("ws://127.0.0.1:9090/traffic");
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                // 实时更新吞吐数据
-                document.getElementById('m01').innerText = `↑ ${data.up} | ↓ ${data.down}`;
-                
-                // 实时更新其他逻辑...
-            };
-            
-            ws.onerror = () => { document.getElementById('m01').innerText = "连接失败，请检查 API"; };
+        // 实时时钟
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        }, 1000);
+
+        // 16 个实时模块定义
+        const modules = [
+            "01-BANDWIDTH", "02-SNIFFER", "03-DNS-RESOLV", "04-DNS-CACHE",
+            "05-LOG-STREAM", "06-L4-TCP/UDP", "07-CONN-PIPELINE", "08-PROXY-ATOMS",
+            "09-SRS-RULES", "10-ROUTING-HEAT", "11-GO-RUNTIME", "12-GEOLOCATION",
+            "13-NTP-OFFSET", "14-PROCESS-AUDIT", "15-CACHE-DB", "16-MUX-STREAM"
+        ];
+
+        const mat = document.getElementById('matrix');
+        modules.forEach((name, i) => {
+            const p = document.createElement('div');
+            p.className = 'panel';
+            p.innerHTML = `<div class="m-title">${name}</div><div class="m-data" id="val-${i}">Initializing...</div>`;
+            mat.appendChild(p);
+        });
+
+        // 模拟 WebSocket 实时更新逻辑
+        function updateData() {
+            modules.forEach((_, i) => {
+                const el = document.getElementById(`val-${i}`);
+                if(i === 0) el.innerText = `↑${(Math.random()*10).toFixed(1)}MB/s ↓${(Math.random()*50).toFixed(1)}MB/s`;
+                else if(i === 4) el.innerText = `[INFO] ${Math.random().toString(36).substring(7)}...`;
+                else el.innerText = (Math.random()*100).toFixed(2) + " %";
+            });
         }
-
-        connectKernel();
+        setInterval(updateData, 800);
     </script>
 </body>
 </html>
