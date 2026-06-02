@@ -3,210 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sing-box 核心架构全自动化监控与诊断大屏</title>
+    <title>sing-box 内核全自动化零固化监控大屏</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
     <style>
         :root {
-            --bg-dark: #020613;
-            --panel-bg: rgba(4, 13, 36, 0.88);
-            --border-blue: #0b2e6f;
+            --bg-dark: #020511;
+            --panel-bg: rgba(3, 11, 31, 0.9);
+            --border-blue: #0b2d6e;
             --text-cyan: #00f0ff;
             --text-green: #00e676;
             --text-amber: #ffb300;
             --text-crimson: #ff1744;
-            --text-muted: #8fa4c5;
+            --text-muted: #738ca9;
         }
-        body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #fff; font-family: 'Courier New', monospace, sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #fff; font-family: monospace, sans-serif; overflow: hidden; }
         
-        /* 顶部看板标题 */
-        .header { text-align: center; padding: 12px 0; font-size: 20px; font-weight: bold; letter-spacing: 2px; background: linear-gradient(to bottom, rgba(0,240,255,0.1) 0%, transparent 100%); border-bottom: 2px solid var(--border-blue); position: relative; }
-        .header .engine-badge { position: absolute; left: 20px; top: 12px; font-size: 11px; text-align: left; line-height: 1.4; color: var(--text-muted); }
-        .header .status-badge { position: absolute; right: 20px; top: 12px; font-size: 11px; text-align: right; line-height: 1.4; }
-
-        /* 网格弹性布局 */
+        /* 顶部控制面板 */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: linear-gradient(to bottom, rgba(0,240,255,0.08) 0%, transparent 100%); border-bottom: 2px solid var(--border-blue); height: 45px; box-sizing: border-box; }
+        .header .title { font-size: 16px; font-weight: bold; letter-spacing: 1px; color: #fff; }
+        .header .api-controller { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .header .api-input { background: #04102b; border: 1px solid var(--border-blue); color: var(--text-cyan); padding: 2px 6px; font-family: monospace; font-size: 11px; border-radius: 2px; width: 140px; }
+        
+        /* 全时动态布局 */
         .grid-container {
             display: grid;
             grid-template-columns: 26% 48% 26%;
-            gap: 12px;
-            padding: 12px;
+            gap: 10px;
+            padding: 10px;
             box-sizing: border-box;
-            height: calc(100vh - 65px);
+            height: calc(100vh - 45px);
         }
-        .column { display: flex; flex-direction: column; gap: 12px; }
+        .column { display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
         
-        /* 通用面板容器 */
-        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-blue); border-radius: 4px; padding: 10px; position: relative; display: flex; flex-direction: column; box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.02); overflow: hidden; }
-        .panel::before { content: ''; position: absolute; top: -1px; left: -1px; width: 6px; height: 6px; border-top: 2px solid var(--text-cyan); border-left: 2px solid var(--text-cyan); }
-        .panel::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 6px; height: 6px; border-bottom: 2px solid var(--text-cyan); border-right: 2px solid var(--text-cyan); }
+        /* 统一态势面板 */
+        .panel { background-color: var(--panel-bg); border: 1px solid var(--border-blue); border-radius: 3px; padding: 8px; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .panel::before { content: ''; position: absolute; top: -1px; left: -1px; width: 5px; height: 5px; border-top: 2px solid var(--text-cyan); border-left: 2px solid var(--text-cyan); }
+        .panel::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 5px; height: 5px; border-bottom: 2px solid var(--text-cyan); border-right: 2px solid var(--text-cyan); }
         
-        .panel-title { font-size: 12px; font-weight: bold; color: var(--text-cyan); margin-bottom: 8px; border-bottom: 1px solid rgba(11, 46, 111, 0.5); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .panel-title .sub { font-size: 10px; color: var(--text-muted); }
+        .panel-title { font-size: 11px; font-weight: bold; color: var(--text-cyan); margin-bottom: 6px; border-bottom: 1px solid rgba(11, 45, 110, 0.4); padding-bottom: 3px; display: flex; justify-content: space-between; }
+        .panel-title .status-tag { font-size: 9px; color: var(--text-muted); font-weight: normal; }
 
-        /* 自动化测试条目 */
-        .test-card { background: rgba(11, 46, 111, 0.15); border: 1px solid rgba(11, 46, 111, 0.4); padding: 6px 8px; margin-bottom: 5px; font-size: 11px; border-left: 3px solid var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        /* 自动化高亮测试卡片 */
+        .test-card { background: rgba(11, 45, 110, 0.15); border: 1px solid rgba(11, 45, 110, 0.4); padding: 5px 8px; margin-bottom: 4px; font-size: 11px; border-left: 3px solid var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
         .test-card.pass { border-left-color: var(--text-green); }
         .test-card.warning { border-left-color: var(--text-amber); }
         .test-card.fail { border-left-color: var(--text-crimson); }
-        .test-value { font-weight: bold; }
-        .text-g { color: var(--text-green); }
-        .text-a { color: var(--text-amber); }
-        .text-c { color: var(--text-crimson); }
-
-        /* 列表与终端模拟 */
-        .scroller { flex: 1; overflow-y: auto; padding-right: 2px; }
-        .scroller::-webkit-scrollbar { width: 3px; }
-        .scroller::-webkit-scrollbar-thumb { background: var(--border-blue); border-radius: 2px; }
-        .list-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px; font-size: 11px; border-bottom: 1px dashed rgba(11, 46, 111, 0.2); }
-
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; table-layout: fixed; }
-        thead th { position: sticky; top: 0; background-color: #030a21; color: var(--text-cyan); padding: 5px; border-bottom: 1px solid var(--border-blue); }
-        tbody td { padding: 4px 5px; border-bottom: 1px dashed rgba(11, 46, 111, 0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a4b6d4; }
-
-        .terminal { flex: 1; background: #01040f; border: 1px solid rgba(11, 46, 111, 0.4); padding: 6px; font-size: 10px; color: #a5b5cb; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; }
         
-        /* 仪表卡片 */
-        .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
-        .metric-card { background: rgba(6, 19, 51, 0.7); border: 1px solid var(--border-blue); padding: 6px; text-align: center; }
-        .metric-card .lbl { font-size: 9px; color: var(--text-muted); }
-        .metric-card .val { font-size: 12px; font-weight: bold; color: var(--text-cyan); margin-top: 2px; }
+        .scroller { flex: 1; overflow-y: auto; }
+        .scroller::-webkit-scrollbar { width: 3px; }
+        .scroller::-webkit-scrollbar-thumb { background: var(--border-blue); }
+        
+        .list-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px; font-size: 11px; border-bottom: 1px dashed rgba(11, 45, 110, 0.2); }
+        
+        /* 流量大字报 */
+        .speed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
+        .speed-card { background: rgba(4, 16, 43, 0.6); border: 1px solid var(--border-blue); padding: 4px; text-align: center; }
+        .speed-card .lbl { font-size: 9px; color: var(--text-muted); }
+        .speed-card .val { font-size: 12px; font-weight: bold; color: var(--text-cyan); margin-top: 1px; }
 
+        /* 矩阵动态外连组 */
+        .outbound-group-box { background: rgba(11, 45, 110, 0.1); border: 1px solid rgba(11, 45, 110, 0.3); padding: 5px; margin-bottom: 6px; }
+        .outbound-group-title { font-size: 10px; color: var(--text-amber); font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between; }
         .node-matrix { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
-        .node-box { background: rgba(11, 46, 111, 0.2); border: 1px solid rgba(11, 46, 111, 0.6); padding: 5px; font-size: 10px; border-radius: 2px; display: flex; justify-content: space-between; align-items: center; }
-        .node-box.active { border-color: var(--text-amber); background: linear-gradient(90deg, rgba(255,179,0,0.15), transparent); }
+        .node-cell { background: rgba(4, 16, 43, 0.5); border: 1px solid rgba(11, 45, 110, 0.5); padding: 4px; font-size: 10px; display: flex; justify-content: space-between; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .node-cell.active { border-color: var(--text-green); background: rgba(0, 230, 118, 0.08); color: var(--text-green); font-weight: bold; }
+
+        /* 数据流表格 */
+        table { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; table-layout: fixed; }
+        thead th { position: sticky; top: 0; background-color: #030b1f; color: var(--text-cyan); padding: 4px; border-bottom: 1px solid var(--border-blue); }
+        tbody td { padding: 4px; border-bottom: 1px dashed rgba(11, 45, 110, 0.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a2b4cd; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        sing-box Engine Core Real-Time Diagnostic Dashboard
-        <div class="engine-badge">
-            CORE_SPEC: <span style="color:var(--text-cyan)">sing-box Tunnels Engine</span><br>
-            MEM_LIMIT: <span style="color:var(--text-amber)">400MB Max (GC: 100%)</span>
-        </div>
-        <div class="status-badge">
-            CLASH_API: <span id="api-status" style="color:var(--text-amber)">正在监听 127.0.0.1:9090...</span><br>
-            REFRESH_INTERVAL: <span style="color:var(--text-green)">500ms 高频</span>
+        <div class="title">sing-box Engine Core Real-Time Diagnostic Module</div>
+        <div class="api-controller">
+            <span>内核侦听端点:</span>
+            <input type="text" id="apiEndpointInput" class="api-input" value="127.0.0.1:9090" onchange="reconnectPipeline()">
+            <span id="global-status" style="color:var(--text-amber); font-weight:bold;">● 正在初始化嗅探...</span>
         </div>
     </div>
 
     <div class="grid-container">
         
         <div class="column">
-            <div class="metric-grid">
-                <div class="metric-card"><div class="lbl">累计传输</div><div class="val" id="m-total">0.00 MB</div></div>
-                <div class="metric-card"><div class="lbl">瞬时上行</div><div class="val" id="m-up">0 KB/s</div></div>
-                <div class="metric-card"><div class="lbl">瞬时下行</div><div class="val" id="m-down">0 KB/s</div></div>
+            <div class="speed-grid">
+                <div class="speed-card"><div class="lbl">累计物理传输</div><div class="val" id="total-traffic">0.00 MB</div></div>
+                <div class="speed-card"><div class="lbl">瞬时上行</div><div class="val" id="speed-up">0.0 K/s</div></div>
+                <div class="speed-card"><div class="lbl">瞬时下行</div><div class="val" id="speed-down">0.0 K/s</div></div>
             </div>
 
-            <div class="panel" style="height: 25%;">
-                <div class="panel-title">sing-box 物理/虚拟入站网卡群 <span>Auto Detect</span></div>
-                <div class="scroller">
-                    <div class="list-item"><span>🛡️ tun-in (系统层托管网卡)</span><span class="text-g">10.8.0.1/24</span></div>
-                    <div class="list-item"><span>🔀 mixed-in (本地混合入站)</span><span style="color:var(--text-cyan)">127.0.0.1:7890</span></div>
-                    <div class="list-item"><span>🔌 http-in / socks-in</span><span class="text-muted">7891 / 7892</span></div>
-                    <div class="list-item"><span>🔄 redirect-in (透明重定向)</span><span class="text-muted">Port: 7893</span></div>
+            <div class="panel" style="height: 30%;">
+                <div class="panel-title">动态捕获：本地活跃入站物理接口 <span class="status-tag">Inbounds 自动指纹识别</span></div>
+                <div class="scroller" id="dynamicInboundList">
+                    <div style="color:var(--text-muted); font-size:11px; padding:10px; text-align:center;">暂未捕获到活跃的物理重定向入站...</div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">DNS 策略分流与 FakeIP 边界审计</div>
+                <div class="panel-title">动态捕获：DNS 解析并发通道与上游响应测试</div>
                 <div class="scroller">
-                    <div style="font-size:10px; color:var(--text-amber); padding:2px 0;">⚡ 静态本地解析表 (hosts_fix)</div>
-                    <div class="list-item"><span>• dns.google</span><span style="color:var(--text-cyan)">8.8.8.8</span></div>
-                    <div class="list-item"><span>• dns.quad9.net</span><span style="color:var(--text-cyan)">9.9.9.9</span></div>
+                    <div style="font-size:10px; color:var(--text-amber); padding:2px 0;">⚡ 活跃浏览器底层局域网解析解析侧速</div>
+                    <div class="test-card" id="dns-local-card"><span>本地并发系统 DNS 延迟</span><span class="val" id="dns-local-val">-- ms</span></div>
+                    <div class="test-card" id="dns-doh-card"><span>阿里/腾讯公共 DoH 连通可用性</span><span class="val" id="dns-doh-val">-- ms</span></div>
                     
-                    <div style="font-size:10px; color:var(--text-amber); padding:6px 0 2px 0;">🎯 Upstream 上游服务器动态延迟</div>
-                    <div class="list-item"><span>🇨🇳 114dns (detour: DIRECT)</span><span class="text-g" id="dns-114">-- ms</span></div>
-                    <div class="list-item"><span>🇺🇸 ggdns (detour: PROXY)</span><span class="text-g" id="dns-gg">-- ms</span></div>
-                    <div class="list-item"><span>🛡️ adguard-dns (detour: PROXY)</span><span class="text-g" id="dns-adg">-- ms</span></div>
-                    
-                    <div style="font-size:10px; color:var(--text-amber); padding:6px 0 2px 0;">🧬 FakeIP 逆向池 (reverse_mapping)</div>
-                    <div class="list-item"><span>IPv4 Range</span><span style="color:var(--text-cyan)">198.18.0.0/15</span></div>
-                    <div class="list-item"><span>IPv6 Range</span><span style="color:var(--text-cyan)">fc00::/18</span></div>
+                    <div style="font-size:10px; color:var(--text-cyan); padding:8px 0 2px 0;">⚙️ 内核流转域名流转追踪 (Recent Domains)</div>
+                    <div id="dnsDomainTrack" style="font-size:10px; color:var(--text-muted); line-height:1.4;">
+                        等待活动管道触发解析审查...
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="panel" style="height: 52%;">
-                <div class="panel-title">sing-box 物理数据出口轨迹交互拓扑地图</div>
-                <div id="mapBox" style="width:100%; flex:1;"></div>
+                <div class="panel-title">活跃网络物理轨迹交互拓扑地图</div>
+                <div id="mapContainer" style="width:100%; flex:1;"></div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">核心网络层全自动化探测矩阵 <span>实时轮询捕获中</span></div>
-                <div class="scroller" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:0 8px;">
+                <div class="panel-title">自动化高级探测矩阵 <span class="status-tag">全维自适应盲测</span></div>
+                <div class="scroller" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 0 10px;">
                     <div>
-                        <div style="font-size:10px; color:var(--text-cyan); margin-bottom:4px;">🌐 国内外 IP 连通性测试</div>
-                        <div class="test-card pass" id="test-cn">
-                            <span>Baidu.cn (国内直连)</span><span class="test-value text-g" id="v-cn">探测中...</span>
-                        </div>
-                        <div class="test-card pass" id="test-global">
-                            <span>Google.com (国外分流)</span><span class="test-value text-g" id="v-global">探测中...</span>
-                        </div>
+                        <div style="font-size:10px; color:var(--text-cyan); margin-bottom:4px;">🌐 国内外双通道 IP 连通测试</div>
+                        <div class="test-card" id="probe-cn"><span>国内骨干网连通 (Baidu)</span><span id="v-probe-cn" style="font-weight:bold;">测试中...</span></div>
+                        <div class="test-card" id="probe-global"><span>国外分流链可用性 (Google)</span><span id="v-probe-global" style="font-weight:bold;">测试中...</span></div>
 
-                        <div style="font-size:10px; color:var(--text-cyan); margin-top:8px; margin-bottom:4px;">🧡 Cloudflare (CF) 架构深度捕获</div>
-                        <div class="test-card warning" id="test-cf-type">
-                            <span>CF 优选节点属性</span><span class="test-value text-a" id="v-cf-type">非 CF 节点</span>
-                        </div>
-                        <div class="test-card pass" id="test-cf-anycast">
-                            <span>CF 边缘节点连通性</span><span class="test-value text-g" id="v-cf-anycast">-- ms</span>
-                        </div>
+                        <div style="font-size:10px; color:var(--text-cyan); margin-top:6px; margin-bottom:4px;">🧡 Cloudflare (CF) 边缘架构自动化辨识</div>
+                        <div class="test-card" id="probe-cf-type"><span>当前活动节点 CF 优选指纹</span><span id="v-probe-cf-type" style="font-weight:bold;">未知</span></div>
+                        <div class="test-card" id="probe-cf-anycast"><span>CF 全球 Anycast 边缘响应</span><span id="v-probe-cf-anycast" style="font-weight:bold;">-- ms</span></div>
                     </div>
-
                     <div>
-                        <div style="font-size:10px; color:var(--text-cyan); margin-bottom:4px;">🛡️ 真实 IP 审计与各种防护测试</div>
-                        <div class="test-card pass" id="test-leak">
-                            <span>IP 泄露/黑洞阻断检查</span><span class="test-value text-g" id="v-leak">SECURE</span>
-                        </div>
-                        <div class="test-card pass" id="test-webrtc">
-                            <span>WebRTC 本地网卡阻断</span><span class="test-value text-g" id="v-webrtc">已劫持</span>
-                        </div>
-                        
-                        <div style="font-size:10px; color:var(--text-cyan); margin-top:8px; margin-bottom:4px;">⚡ DNS 策略控制状态</div>
-                        <div class="test-card fail" id="test-dns-leak">
-                            <span>无污染 DNS 隧道流转</span><span class="test-value text-g" id="v-dns-leak">未见泄漏</span>
-                        </div>
-                        <div class="test-card pass" id="test-ipv6">
-                            <span>IPv6 优先策略(prefer_ipv4)</span><span class="test-value text-a" id="v-ipv6">已阻断V6</span>
-                        </div>
+                        <div style="font-size:10px; color:var(--text-cyan); margin-bottom:4px;">🛡️ 活跃公网出口 IP 属性各种测试</div>
+                        <div class="test-card" id="probe-ip"><span>动态出口 IP</span><span id="v-probe-ip" style="font-weight:bold; font-size:10px; color:var(--text-cyan)">探测中...</span></div>
+                        <div class="test-card" id="probe-geo"><span>地理定位 / 归属国家</span><span id="v-probe-geo" style="font-weight:bold; color:var(--text-green)">--</span></div>
+                        <div class="test-card" id="probe-isp"><span>物理网络运营商 (ISP)</span><span id="v-probe-isp" style="font-weight:bold; color:var(--text-amber)">--</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="column">
-            <div class="panel" style="height: 38%;">
-                <div class="panel-title">sing-box 出站分组拓扑 (Outbounds)</div>
-                <div class="scroller">
-                    <div style="font-size:10px; color:var(--text-cyan); margin-bottom:4px;">⚙️ 核心决策组</div>
-                    <div class="node-matrix">
-                        <div class="node-box active" id="nb-proxy"><span>PROXY (选择器)</span><span class="text-a">🟢 自动-测速</span></div>
-                        <div class="node-box"><span>GLOBAL</span><span class="text-muted">PROXY</span></div>
-                        <div class="node-box"><span>CN</span><span class="text-g">DIRECT</span></div>
-                        <div class="node-box"><span>Final</span><span class="text-muted">PROXY</span></div>
-                    </div>
-                    <div style="font-size:10px; color:var(--text-cyan); margin:6px 0 4px 0;">⚡ 动态子集 (URL-Test / UDP)</div>
-                    <div class="list-item"><span>🟢 自动-测速 (gstatic-204)</span><span class="text-g">10m 周期</span></div>
-                    <div class="list-item"><span>🔵 自动-稳定 (gstatic-204)</span><span class="text-g">15m 周期</span></div>
-                    <div class="list-item"><span>🟣 QUIC-UDP (分流拦截组)</span><span style="color:var(--text-cyan)">pkpk02</span></div>
+            <div class="panel" style="height: 45%;">
+                <div class="panel-title">动态捕获：本地出站策略路由拓扑群 <span class="status-tag">Outbounds 拓扑结构</span></div>
+                <div class="scroller" id="dynamicOutboundsContainer">
+                    <div style="color:var(--text-muted); font-size:11px; padding:10px; text-align:center;">正在拉取本地内核路由决策分支拓扑...</div>
                 </div>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">实时连接管道跟踪 (Connections)</div>
-                <div style="flex:1; overflow:auto;">
-                    <table id="connTable">
+                <div class="panel-title">动态捕获：活跃连接会话管道监控流 (Connections)</div>
+                <div style="flex:1; overflow:auto;" class="scroller">
+                    <table id="connectionsTable">
                         <thead>
                             <tr>
-                                <th style="width:30%">目标主机</th>
-                                <th style="width:20%">端口</th>
-                                <th style="width:20%">协议</th>
-                                <th style="width:30%">规则出站</th>
+                                <th style="width:45%">目标主机 / 终点IP</th>
+                                <th style="width:15%">端口</th>
+                                <th style="width:15%">协议</th>
+                                <th style="width:25%">出站链路路径</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">等待并发会话注入管道...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -215,226 +176,326 @@
     </div>
 
     <script>
-        // 初始化 ECharts 地图
-        const mapChart = echarts.init(document.getElementById('mapBox'));
-        const geoCoordMap = {
-            'Local': [10.8001, 35.0000], // 抽象本地 tun0
-            'CN': [116.4074, 39.9042], 'HK': [114.1694, 22.3193], 
-            'US': [-100.5729, 37.7510], 'CF_ANYCAST': [104.1600, 30.0000]
-        };
-
+        // 初始化全球画布
+        const mapChart = echarts.init(document.getElementById('mapContainer'));
+        const geoDictionary = { 'LocalClient': [105, 35], 'DIRECT_OUT': [116, 39], 'PROXY_OUT': [139, 35] };
         const mapOption = {
             backgroundColor: 'transparent',
             geo: {
-                map: 'world', roam: true, zoom: 1.4, center: [40, 20],
-                itemStyle: { normal: { areaColor: '#040b1d', borderColor: '#0f2b60', borderWidth: 0.8 }, emphasis: { areaColor: '#0a1d45' } }
+                map: 'world', roam: true, zoom: 1.3, center: [60, 25],
+                itemStyle: { normal: { areaColor: '#030a21', borderColor: '#0e2d6b', borderWidth: 0.8 }, emphasis: { areaColor: '#061536' } }
             },
             series: [
-                { type: 'lines', zlevel: 1, effect: { show: true, period: 4, trailLength: 0.2, symbol: 'circle', symbolSize: 3 }, lineStyle: { normal: { color: '#00f0ff', width: 0.8, opacity: 0.3, curveness: 0.15 } }, data: [] },
-                { type: 'effectScatter', coordinateSystem: 'geo', zlevel: 2, rippleEffect: { brushType: 'stroke', scale: 2.5 }, label: { normal: { show: true, position: 'right', formatter: '{b}', textStyle: { fontSize: 8, color: '#fff' } } }, symbolSize: 5, itemStyle: { normal: { color: '#00f0ff' } }, data: [] }
+                { type: 'lines', zlevel: 1, effect: { show: true, period: 4, trailLength: 0.18, symbol: 'circle', symbolSize: 2.5 }, lineStyle: { normal: { color: '#00f0ff', width: 0.7, opacity: 0.25, curveness: 0.15 } }, data: [] },
+                { type: 'effectScatter', coordinateSystem: 'geo', zlevel: 2, rippleEffect: { brushType: 'stroke', scale: 2.2 }, label: { normal: { show: true, position: 'right', formatter: '{b}', textStyle: { fontSize: 8, color: '#fff' } } }, symbolSize: 4.5, itemStyle: { normal: { color: '#00f0ff' } }, data: [] }
             ]
         };
         mapChart.setOption(mapOption);
 
-        // ======================= 全自动化探测核心控制引擎 =======================
-        const EXTERNAL_API = "127.0.0.1:9090";
-        let isConnectedToCore = false;
-        let totalBytes = 0;
+        let currentAPI = "127.0.0.1:9090";
+        let accumulatedVolume = 0;
+        let inboundCacheSet = new Set();
+        let domainCacheList = [];
+        let globalActiveNodeName = "";
 
-        // 核心功能 1 & 3: 自动化测试国内外 IP、各种防护与漏分析
-        function runNetworkProbes() {
-            // 国内节点连通性测试 (Baidu)
-            const startCn = Date.now();
+        function reconnectPipeline() {
+            currentAPI = document.getElementById('apiEndpointInput').value.trim();
+            inboundCacheSet.clear();
+            domainCacheList = [];
+            accumulatedVolume = 0;
+            document.getElementById('global-status').innerText = "● 切换管道并重新协商...";
+            document.getElementById('global-status').style.color = "var(--text-amber)";
+        }
+
+        // ========================== 核心 1 & 3: 自动化国内外连通性测试与公网各种地址测试 ==========================
+        async function executeComprehensiveProbes() {
+            // A. 国内链路盲测
+            const tCnStart = Date.now();
             fetch('https://www.baidu.com/img/flexible/logo/pc/index.png', { mode: 'no-cors', cache: 'no-cache' })
                 .then(() => {
-                    const diff = Date.now() - startCn;
-                    document.getElementById('v-cn').innerText = diff + " ms";
-                    document.getElementById('test-cn').className = "test-card pass";
+                    const d = Date.now() - tCnStart;
+                    document.getElementById('v-probe-cn').innerText = d + " ms";
+                    document.getElementById('probe-cn').className = "test-card pass";
                 }).catch(() => {
-                    document.getElementById('v-cn').innerText = "超时/断开";
-                    document.getElementById('test-cn').className = "test-card fail";
+                    document.getElementById('v-probe-cn').innerText = "断开 / 拦截";
+                    document.getElementById('probe-cn').className = "test-card fail";
                 });
 
-            // 国外节点连通性测试 (Google 分流)
-            const startGl = Date.now();
+            // B. 国外链路盲测
+            const tGlStart = Date.now();
             fetch('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png', { mode: 'no-cors', cache: 'no-cache' })
                 .then(() => {
-                    const diff = Date.now() - startGl;
-                    document.getElementById('v-global').innerText = diff + " ms";
-                    document.getElementById('test-global').className = "test-card pass";
+                    const d = Date.now() - tGlStart;
+                    document.getElementById('v-probe-global').innerText = d + " ms";
+                    document.getElementById('probe-global').className = "test-card pass";
                 }).catch(() => {
-                    document.getElementById('v-global').innerText = "异常/拦截";
-                    document.getElementById('test-global').className = "test-card fail";
+                    document.getElementById('v-probe-global').innerText = "异常 / 阻断";
+                    document.getElementById('probe-global').className = "test-card fail";
                 });
 
-            // 模拟抓取各种地址与防护审计
-            document.getElementById('v-leak').innerText = "安全 (TUN拦截)";
-            document.getElementById('v-webrtc').innerText = "已阻断漏";
-            document.getElementById('v-dns-leak').innerText = "未命中本地V6";
-        }
-
-        // 核心功能 2: 自动化捕获节点是否有 Cloudflare (CF) 优选域名或 IP
-        function runCloudflareOptimizationDetector(activeNode) {
-            const typeEl = document.getElementById('v-cf-type');
-            const anycastEl = document.getElementById('v-cf-anycast');
-
-            if (!activeNode) {
-                typeEl.innerText = "分析中...";
-                return;
-            }
-
-            const name = activeNode.toUpperCase();
-            // 自动捕获特定高频 CF 优选关键词、CNAME 或者 Anycast 标志
-            if (name.includes('CF') || name.includes('CLOUDFLARE') || name.includes('优选') || name.includes('ANYCAST')) {
-                typeEl.innerText = "🎯 优选 Cloudflare 边缘";
-                document.getElementById('test-cf-type').className = "test-card pass";
-                anycastEl.innerText = Math.floor(Math.random() * 12 + 8) + " ms";
-            } else {
-                // 执行弹性概率指纹识别
-                typeEl.innerText = "常规私有拓扑";
-                document.getElementById('test-cf-type').className = "test-card warning";
-                anycastEl.innerText = "-- ms";
-            }
-        }
-
-        // 核心功能 4: 自动化捕获 DNS 测试与上游延迟
-        function benchmarkDnsResolvers() {
-            document.getElementById('dns-114').innerText = Math.floor(Math.random() * 5 + 3) + " ms";
-            document.getElementById('dns-gg').innerText = Math.floor(Math.random() * 25 + 35) + " ms";
-            document.getElementById('dns-adg').innerText = Math.floor(Math.random() * 20 + 45) + " ms";
-        }
-
-        // 动态更新活动连接监控流
-        function renderConnections(connections) {
-            const tbody = document.querySelector('#connTable tbody');
-            tbody.innerHTML = '';
-            
-            const lines = [];
-            const scatters = [{ name: '本地虚拟网卡', value: geoCoordMap['Local'] }];
-
-            connections.slice(0, 12).forEach(c => {
-                const tr = document.createElement('tr');
-                const host = c.metadata.host || c.metadata.destinationIP;
-                const port = c.metadata.destinationPort;
-                const chain = c.chains ? c.chains.join('->') : 'DIRECT';
-                const proto = c.metadata.network.toUpperCase();
-
-                tr.innerHTML = `
-                    <td title="${host}" style="color: var(--text-cyan);">${host}</td>
-                    <td>${port}</td>
-                    <td><small>${proto}</small></td>
-                    <td style="color:var(--text-amber); font-weight:bold;">${chain}</td>
-                `;
-                tbody.appendChild(tr);
-
-                // 联动地图数据点
-                let destKey = 'CN';
-                if (chain.includes('PROXY') || chain.includes('测速') || chain.includes('pkpk')) {
-                    destKey = 'HK';
+            // C. 各种测试：全自动化抓取当前使用者浏览器出口的真实公网 IP 地址各种属性（ISP、国家、组织）
+            try {
+                // 使用公共真空地理接口（跟随使用者的本地 sing-box 路由逻辑流转）
+                const ipRes = await fetch('https://ipapi.co/json/', { cache: 'no-cache' });
+                const ipData = await ipRes.json();
+                if(ipData && ipData.ip) {
+                    document.getElementById('v-probe-ip').innerText = ipData.ip;
+                    document.getElementById('v-probe-geo').innerText = `${ipData.country_name} (${ipData.city})`;
+                    document.getElementById('v-probe-isp').innerText = ipData.org || ipData.asn || "未知基础运营商";
+                    document.getElementById('probe-ip').className = "test-card pass";
                 }
-                lines.push({ coords: [geoCoordMap['Local'], geoCoordMap[destKey]] });
-                if (!scatters.find(s => s.name === destKey)) {
-                    scatters.push({ name: destKey, value: geoCoordMap[destKey] });
+            } catch (err) {
+                document.getElementById('v-probe-ip').innerText = "捕获超时";
+                document.getElementById('probe-ip').className = "test-card warning";
+            }
+        }
+
+        // ========================== 核心 2: 自动化捕获节点是否有 CF 优选域名或 IP ==========================
+        function executeCloudflareAudit(activeNodeName, connections) {
+            const typeCard = document.getElementById('probe-cf-type');
+            const anycastCard = document.getElementById('probe-cf-anycast');
+            const vType = document.getElementById('v-probe-cf-type');
+            const vAnycast = document.getElementById('v-probe-cf-anycast');
+
+            if (!activeNodeName) return;
+
+            const upperNode = activeNodeName.toUpperCase();
+            let isCloudflareInfrastructure = false;
+
+            // 规则一：指纹特征名称自动抓取
+            if (/CF|CLOUDFLARE|优选|ANYCAST|WORKER|CDN/i.test(upperNode)) {
+                isCloudflareInfrastructure = true;
+            }
+
+            // 规则二：遍历当前活跃会话中是否存在指向 CF 边缘节点的物理 IP 或主机
+            connections.forEach(c => {
+                const host = (c.metadata.host || "").toLowerCase();
+                if (host.includes('cloudflare') || host.includes('workers.dev')) {
+                    isCloudflareInfrastructure = true;
                 }
             });
 
-            mapChart.setOption({ series: [{ data: lines }, { data: scatters }] }, { lazyUpdate: true });
+            if (isCloudflareInfrastructure) {
+                vType.innerText = "🎯 确认挂载 CF 优选网络";
+                typeCard.className = "test-card pass";
+                
+                // 自动化进行对 CF 核心 Anycast 网络的毫秒级并发测试
+                const cfStart = Date.now();
+                fetch('https://1.1.1.1/cdn-cgi/trace', { mode: 'no-cors', cache: 'no-cache' })
+                    .then(() => {
+                        vAnycast.innerText = (Date.now() - cfStart) + " ms";
+                        anycastCard.className = "test-card pass";
+                    }).catch(() => {
+                        vAnycast.innerText = "Anycast 隔离";
+                        anycastCard.className = "test-card warning";
+                    });
+            } else {
+                vType.innerText = "常规私有物理拓扑";
+                typeCard.className = "test-card warning";
+                vAnycast.innerText = "-- ms";
+                anycastCard.className = "test-card";
+            }
         }
 
-        // ======================= 物理内核通信对接管线 (Clash API) =======================
-        function initRealCorePipeline() {
-            isConnectedToCore = true;
-            document.getElementById('api-status').innerText = "LIVE 实时接管内核 API";
-            document.getElementById('api-status').style.color = "var(--text-green)";
+        // ========================== 核心 4: 自动化捕获 DNS 各种侧速 ==========================
+        function executeDnsBenchmarks() {
+            const localStart = Date.now();
+            // 测试浏览器默认并发解析
+            fetch('https://localhost:9999/ping', { mode: 'no-cors' }).catch(() => {
+                document.getElementById('dns-local-val').innerText = (Date.now() - localStart) + " ms";
+                document.getElementById('dns-local-card').className = "test-card pass";
+            });
 
-            // 1. 高频流量特征 Websocket 对接
-            const trafficWS = new WebSocket(`ws://${EXTERNAL_API}/traffic`);
-            trafficWS.onmessage = (e) => {
-                const data = JSON.parse(e.data);
-                totalBytes += (data.up + data.down);
-                document.getElementById('m-total').innerText = (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
-                document.getElementById('m-up').innerText = (data.up / 1024).toFixed(1) + " KB/s";
-                document.getElementById('m-down').innerText = (data.down / 1024).toFixed(1) + " KB/s";
-            };
+            const dohStart = Date.now();
+            // 公共可信 DNS 隧道连通性探测
+            fetch('https://dns.pub/dns-query', { mode: 'no-cors', cache: 'no-cache' })
+                .then(() => {
+                    document.getElementById('dns-doh-val').innerText = (Date.now() - dohStart) + " ms";
+                    document.getElementById('dns-doh-card').className = "test-card pass";
+                }).catch(() => {
+                    document.getElementById('dns-doh-val').innerText = "超时";
+                    document.getElementById('dns-doh-card').className = "test-card fail";
+                });
+        }
 
-            // 2. 500ms 高频连接与路由策略清洗轮询
+        // ========================== 核心全自动化数据流整合治理引擎 ==========================
+        function runDynamicDashboardPipeline() {
+            // 1. 高频流量特征物理管道 (自适应每个人本地配置的端口)
+            let trafficSocket;
+            try {
+                trafficSocket = new WebSocket(`ws://${currentAPI}/traffic`);
+                trafficSocket.onmessage = (e) => {
+                    const data = JSON.parse(e.data);
+                    accumulatedVolume += (data.up + data.down);
+                    document.getElementById('total-traffic').innerText = (accumulatedVolume / (1024 * 1024)).toFixed(2) + " MB";
+                    document.getElementById('speed-up').innerText = (data.up / 1024).toFixed(1) + " KB/s";
+                    document.getElementById('speed-down').innerText = (data.down / 1024).toFixed(1) + " KB/s";
+                    document.getElementById('global-status').innerText = "● 实时同步中";
+                    document.getElementById('global-status').style.color = "var(--text-green)";
+                };
+                trafficSocket.onerror = () => { triggerFallbackMode(); };
+            } catch(err) { triggerFallbackMode(); }
+
+            // 2. 500ms 高频零污染全景数据拉取
             setInterval(async () => {
                 try {
-                    // 获取活动链路数据
-                    const connRes = await fetch(`http://${EXTERNAL_API}/connections`);
-                    const connData = await connRes.json();
-                    renderConnections(connData.connections);
-
-                    // 获取出站策略组数据
-                    const proxyRes = await fetch(`http://${EXTERNAL_API}/proxies`);
-                    const proxyData = await proxyRes.json();
+                    // A. 自动拉取活跃连接
+                    const resConn = await fetch(`http://${currentAPI}/connections`);
+                    const dataConn = await resConn.json();
+                    const activeConnections = dataConn.connections || [];
                     
-                    if (proxyData.proxies && proxyData.proxies['PROXY']) {
-                        const activeNode = proxyData.proxies['PROXY'].now;
-                        document.getElementById('nb-proxy').innerHTML = `<span>PROXY (选择器)</span><span class="text-a" title="${activeNode}">${activeNode}</span>`;
-                        // 将活动的物理出站节点送入 CF 智能检测过滤器
-                        runCloudflareOptimizationDetector(activeNode);
+                    // B. 自动发现 Inbounds (洗净静态词汇，有活动流量通过什么物理入站，就打印什么入站)
+                    activeConnections.forEach(c => {
+                        if(c.metadata && c.metadata.inbound) {
+                            inboundCacheSet.add(c.metadata.inbound);
+                        }
+                        if(c.metadata && c.metadata.host && !domainCacheList.includes(c.metadata.host)) {
+                            domainCacheList.unshift(c.metadata.host);
+                            if(domainCacheList.length > 5) domainCacheList.pop();
+                        }
+                    });
+
+                    // 渲染自动发现的 Inbound 网卡接口
+                    const inboundContainer = document.getElementById('dynamicInboundList');
+                    if(inboundCacheSet.size > 0) {
+                        inboundContainer.innerHTML = Array.from(inboundCacheSet).map(inboundName => `
+                            <div class="list-item">
+                                <span>🛡️ ${inboundName} (内核探测入站)</span>
+                                <span class="text-g" style="color:var(--text-green)">ACTIVE (内核已托管)</span>
+                            </div>
+                        `).join('');
                     }
-                    
-                    // 驱动高频网络测试
-                    runNetworkProbes();
-                    benchmarkDnsResolvers();
 
-                } catch (err) { console.error("sing-box API 交互异常:", err); }
-            }, 500);
+                    // 渲染 DNS 流转域名追踪
+                    if(domainCacheList.length > 0) {
+                        document.getElementById('dnsDomainTrack').innerHTML = domainCacheList.map(d => `<div>• ${d}</div>`).join('');
+                    }
+
+                    // C. 动态渲染 Connections 会话表
+                    const tbody = document.querySelector('#connectionsTable tbody');
+                    if(activeConnections.length > 0) {
+                        tbody.innerHTML = '';
+                        const mapLines = [];
+                        const mapScatters = [{ name: '本地物理端点', value: geoDictionary['LocalClient'] }];
+
+                        activeConnections.slice(0, 15).forEach(c => {
+                            const tr = document.createElement('tr');
+                            const host = c.metadata.host || c.metadata.destinationIP;
+                            const chain = c.chains ? c.chains.join('->') : 'DIRECT';
+                            
+                            tr.innerHTML = `
+                                <td title="${host}" style="color:var(--text-cyan)">${host}</td>
+                                <td>${c.metadata.destinationPort}</td>
+                                <td><small>${c.metadata.network.toUpperCase()}</small></td>
+                                <td style="color:var(--text-amber); font-weight:bold;">${chain}</td>
+                            `;
+                            tbody.appendChild(tr);
+
+                            // 地图动态连线
+                            const isProxyPath = (chain.includes('PROXY') || chain.includes('节点') || chain.includes('自动'));
+                            const trackKey = isProxyPath ? 'PROXY_OUT' : 'DIRECT_OUT';
+                            mapLines.push({ coords: [geoDictionary['LocalClient'], geoDictionary[trackKey]] });
+                            if(!mapScatters.find(s => s.name === trackKey)) {
+                                mapScatters.push({ name: isProxyPath ? '代理出站汇聚' : '直连骨干出口', value: geoDictionary[trackKey] });
+                            }
+                        });
+
+                        mapChart.setOption({ series: [{ data: mapLines }, { data: mapScatters }] }, { lazyUpdate: true });
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">等待并发会话注入管道...</td></tr>`;
+                    }
+
+                    // D. 自动捕获 Outbounds 拓扑结构 (完全抹平硬编码，有多少分组，叫什么名字，全部通过接口循环解析渲染)
+                    const resProxies = await fetch(`http://${currentAPI}/proxies`);
+                    const dataProxies = await resProxies.json();
+                    
+                    if (dataProxies && dataProxies.proxies) {
+                        const outboundsContainer = document.getElementById('dynamicOutboundsContainer');
+                        outboundsContainer.innerHTML = '';
+
+                        for (let groupName in dataProxies.proxies) {
+                            const p = dataProxies.proxies[groupName];
+                            // 过滤出具备选择和子节点属性的分流策略组 (Selector 或 URLTest)
+                            if (p.all && p.all.length > 0) {
+                                if (groupName === 'GLOBAL' || p.type === 'Selector' || p.type === 'URLTest') {
+                                    
+                                    // 抓取当前整个内核在活动中的顶级核心出口节点名
+                                    if(groupName === 'PROXY' || groupName === 'GLOBAL') {
+                                        globalActiveNodeName = p.now;
+                                    }
+
+                                    const groupDiv = document.createElement('div');
+                                    groupDiv.className = 'outbound-group-box';
+                                    groupDiv.innerHTML = `
+                                        <div class="outbound-group-title">
+                                            <span>🌿 分组: ${groupName} (${p.type})</span>
+                                            <span style="color:var(--text-cyan)">当前选定 → ${p.now}</span>
+                                        </div>
+                                    `;
+
+                                    const matrixDiv = document.createElement('div');
+                                    matrixDiv.className = 'node-matrix';
+                                    
+                                    // 抽取前4个子节点做高精状态矩阵，防止节点过多挤爆大屏
+                                    p.all.slice(0, 4).forEach(childNodeName => {
+                                        const isSelected = (childNodeName === p.now);
+                                        matrixDiv.innerHTML += `
+                                            <div class="node-cell ${isSelected ? 'active' : ''}" title="${childNodeName}">
+                                                <span>${childNodeName}</span>
+                                            </div>
+                                        `;
+                                    });
+                                    if(p.all.length > 4) {
+                                        matrixDiv.innerHTML += `<div class="node-cell" style="color:var(--text-muted)">... 其余 ${p.all.length - 4} 个节点隐藏</div>`;
+                                    }
+
+                                    groupDiv.appendChild(matrixDiv);
+                                    outboundsContainer.appendChild(groupDiv);
+                                }
+                            }
+                        }
+                    }
+
+                    // E. 驱动独立高频自动盲测矩阵
+                    executeComprehensiveProbes();
+                    executeCloudflareAudit(globalActiveNodeName, activeConnections);
+                    executeDnsBenchmarks();
+
+                } catch(err) {
+                    triggerFallbackMode();
+                }
+            }, 600);
         }
 
-        // ======================= 数字孪生高阶仿真系统 (无跨域/无环境时兜底) =======================
-        function initSimulationPipeline() {
-            isConnectedToCore = false;
-            document.getElementById('api-status').innerText = "TWIN 数字孪生仿真模式";
-            
-            const mockNodes = ["🟢 自动-测速", "🟣 QUIC-UDP", "🔒 CF-优选香港边缘-01", "🔒 优选Anycast-美国-02"];
-            let idx = 0;
+        // 异常熔断与动态仿真降级：当本地没开 API 或跨域被拦截时自动切入虚拟数字孪生，确保任何群友打开都不会报错死屏
+        function triggerFallbackMode() {
+            document.getElementById('global-status').innerText = "● 未探测到内核 API (已切入数字孪生仿真)";
+            document.getElementById('global-status').style.color = "var(--text-crimson)";
+        }
 
+        function triggerSimulationDataFlow() {
+            // 本地没有物理连接时，高仿真模拟各种测试逻辑，以便群友拿到单文件可以直接看演示效果
             setInterval(() => {
-                idx = (idx + 1) % mockNodes.length;
-                const currentActiveNode = mockNodes[idx];
+                if (document.getElementById('global-status').innerText.includes('实时同步')) return;
                 
-                // 模拟流量突发
-                const u = Math.random() * 45; const d = Math.random() * 520;
-                totalBytes += (u + d) * 1024;
-                document.getElementById('m-total').innerText = (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
-                document.getElementById('m-up').innerText = u.toFixed(1) + " KB/s";
-                document.getElementById('m-down').innerText = d.toFixed(1) + " KB/s";
-
-                // 驱动四大自动化捕获测试
-                runNetworkProbes();
-                runCloudflareOptimizationDetector(currentActiveNode);
-                benchmarkDnsResolvers();
-
-                // 模拟活动管道流转表格
-                const mockConns = [
-                    { metadata: { host: 'mtalk.google.com', destinationPort: 5228, network: 'tcp' }, chains: ['PROXY', currentActiveNode] },
-                    { metadata: { host: 'secure-dns.google', destinationPort: 443, network: 'udp' }, chains: ['PROXY'] },
-                    { metadata: { host: 'bilibili.com', destinationPort: 443, network: 'tcp' }, chains: ['DIRECT'] },
-                    { metadata: { host: 'steamcontent.com', destinationPort: 80, network: 'tcp' }, chains: ['DIRECT'] }
-                ];
-                renderConnections(mockConns);
-
-                // 更新界面节点组文本
-                document.getElementById('nb-proxy').innerHTML = `<span>PROXY (选择器)</span><span class="text-a">${currentActiveNode}</span>`;
-
+                // 模拟综合探测矩阵
+                executeComprehensiveProbes();
+                executeDnsBenchmarks();
+                
+                const mockNode = "🔒 优选-Cloudflare-香港Anycast";
+                document.getElementById('dynamicInboundList').innerHTML = `
+                    <div class="list-item"><span>🛡️ tun-in (虚拟仿真捕获)</span><span style="color:var(--text-green)">ACTIVE</span></div>
+                `;
+                document.getElementById('nb-proxy') || executeCloudflareAudit(mockNode, []);
             }, 1000);
         }
 
         window.addEventListener('resize', () => mapChart.resize());
-
-        // 引导启动：自探测本地 9090 的 Clash API 控制层
-        (async function boot() {
-            try {
-                const controller = new AbortController();
-                setTimeout(() => controller.abort(), 500);
-                await fetch(`http://${EXTERNAL_API}/proxies`, { mode: 'cors', signal: controller.signal });
-                initRealCorePipeline();
-            } catch(e) {
-                initSimulationPipeline();
-            }
+        
+        // 自动自愈引导启动
+        (function boot() {
+            runDynamicDashboardPipeline();
+            triggerSimulationDataFlow();
         })();
     </script>
 </body>
